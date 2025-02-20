@@ -190,10 +190,27 @@ public class GameManager : MonoBehaviour
 
    void RespawnPlayer()
    {
+        
+    // Destroy all spawned enemies
+    foreach (EnemySpawner spawner in Object.FindObjectsByType<EnemySpawner>(FindObjectsSortMode.None))
+    {
+        foreach (Transform enemy in spawner.transform) // Loop through children
+        {
+            if (enemy.CompareTag("Enemy")) // ✅ Only destroy objects with the "Enemy" tag
+            {
+                Destroy(enemy.gameObject);
+            }
+           
+        }
+         
+        spawner.ResetSpawner();
+
+    }
+    
+    // Confirm player can respawn
         Debug.Log("Respawning player at: " + respawnPosition);
         if (!player.preventRespawn)
         {
-       
        // Play respawn sound
        audioSource = GetComponent<AudioSource>();
        if (audioSource == null)
@@ -202,7 +219,12 @@ public class GameManager : MonoBehaviour
        }
         audioSource.PlayOneShot(respawnSound, 0.2f);
 
-       // Respawn player
+    //Reset player animation booleans
+    player.GetComponent<Animator>().SetBool("isPoweringUp", false);
+    player.GetComponent<Animator>().SetBool("isFalling", false);
+    player.GetComponent<Animator>().SetBool("isLaunched", false);
+    
+    // Respawn player
        player.transform.position = respawnPosition;  // Move player to respawn location
        player.GetComponent<SpriteRenderer>().enabled = true;  // Make the player visible after enemy script makes invisible
        isRespawning = false;  // Reset respawn flag
@@ -216,7 +238,6 @@ public class GameManager : MonoBehaviour
         {
             Debug.Log("Player prevented from respawning");
         }
-       
    }
 
 

@@ -17,7 +17,7 @@ public class EnemySpawner : MonoBehaviour
 	private bool playerInZone = false; // Tracks if player is in trigger area
     private bool isSpawning = false; // Tracks if spawning is in progress
     public float spawnDelay = 5f; // Adjustable time between spawns
-	private bool hasTriggered = false; // Tracks if the spawner has been triggered
+	public bool hasTriggered = false; // Tracks if the spawner has been triggered
 
 	private Transform player;
 
@@ -78,7 +78,9 @@ private void SpawnEnemy()
 	}
 
 	// Instantiate enemy at the adjusted position
-	GameObject newEnemy = Instantiate(enemyPrefab, finalSpawnPosition, Quaternion.identity);
+    GameObject newEnemy = Instantiate(enemyPrefab, finalSpawnPosition, Quaternion.identity, transform); // ✅ Set parent to this spawner
+	// ✅ Explicitly set the spawner as the parent after instantiation
+    newEnemy.transform.SetParent(transform);
 
 	// Ensure enemy faces correct direction
 	newEnemy.transform.localScale = new Vector3(spawnPoint == leftSpawn ? 1 : -1, 1, 1);
@@ -92,5 +94,14 @@ private void SpawnEnemy()
 
 	currentEnemies++; // Track spawned enemies
 }
+
+public void ResetSpawner()
+{
+    hasTriggered = false;
+    playerInZone = false;
+    isSpawning = false; // ✅ Ensure spawning can happen again
+    currentEnemies = 0; // ✅ Reset enemy count
+}
+
 
 }

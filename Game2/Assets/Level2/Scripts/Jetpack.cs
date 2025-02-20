@@ -20,6 +20,7 @@ public class JetpackController : MonoBehaviour
     [SerializeField] private float maxVolume = 1f;
     [SerializeField] private float minVolume = 0.2f;
 
+    Player player;
     private Rigidbody2D rb;
     private Animator animator;
     private GameManager gameManager;
@@ -30,6 +31,7 @@ public class JetpackController : MonoBehaviour
 
     private void Start()
     {
+        player = FindFirstObjectByType<Player>();
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         gameManager = FindFirstObjectByType<GameManager>();
@@ -115,24 +117,41 @@ public class JetpackController : MonoBehaviour
         isGrounded = false;
     }
 
-    private void StartFalling()
+   private void StartFalling()
+{
+    // Only start the falling sequence if we weren't already falling
+    if (!isFalling)
     {
         Debug.Log("Player falling");
         isFalling = true;
+        player.isFallingJetPack = true;
         animator.SetBool("isLaunched", false);
         animator.SetBool("isFalling", true);
         rb.gravityScale = fallGravityScale;
+        //Debug if gravity is being set on player
+        Debug.Log("Gravity scale set to: " + rb.gravityScale);
 
         // Play thruster sound
         audioSource.clip = thrusterSound;
-        audioSource.loop = true;
+        audioSource.loop = false;  
         audioSource.volume = maxVolume;
         audioSource.Play();
+        //Check if clip is isPlayingFallSound
+        if (audioSource.isPlaying)
+        {
+            Debug.Log("Thruster sound is playing");
+        }
+        else
+        {
+            Debug.Log("Thruster sound is not playing");
+        }
     }
+}
 
     private void StopFalling()
     {
         isFalling = false;
+        player.isFallingJetPack = false;
         animator.SetBool("isFalling", false);
         animator.SetBool("isLaunched", false);  // Add this line
         animator.SetBool("isPoweringUp", false); // Add this for safety

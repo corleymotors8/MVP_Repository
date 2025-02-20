@@ -59,6 +59,7 @@ public class Player : MonoBehaviour, IDamageable
     public int jumpCount = 0;
     private bool previousFallingState;
     public bool isFalling = false;
+    public bool isFallingJetPack = false;
     public float fallThreshold = -0.1f;  // Threshold for detecting falling
     public bool isImmune = false; // Give player immunity when respawn
     public bool preventRespawn = false;
@@ -160,10 +161,13 @@ public class Player : MonoBehaviour, IDamageable
         isClimbing = true;
         }
         else
-        {
-        rb.gravityScale = 9;
-        isClimbing = false;
-        }
+            {
+            if (!isFallingJetPack) // Only reset gravity if NOT falling from jetpack
+                {
+                rb.gravityScale = 9;
+                }
+                isClimbing = false;
+            }
 
         if (canClimb && verticalInput != 0)
         {
@@ -327,6 +331,16 @@ public void PlayAttackSound()
            isFalling = false;
            audioSource.PlayOneShot(landSound, landVolume); // Play the sound
        }
+
+       // Death platforms (to be added later, for now just red platforms)
+         if (collision.gameObject.CompareTag("DeathPlatform"))
+         {
+              GameManager gameManager = GameObject.FindFirstObjectByType<GameManager>();
+              if (gameManager != null)
+              {
+                gameManager.PlayerDied();
+              }
+         }
     }
 
     public void TakeDamage(int damage)
