@@ -49,7 +49,7 @@ public class Crusher : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         initialPosition = transform.position;
         audioSource = GetComponent<AudioSource>();
-        audioSource = gameObject.AddComponent<AudioSource>();
+       ;
 
          // Ensure a platform is assigned
         if (landingPlatform != null)

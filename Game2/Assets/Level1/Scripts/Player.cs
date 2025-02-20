@@ -35,7 +35,7 @@ public class Player : MonoBehaviour, IDamageable
     public float attackCooldown = 0.5f; // Time between attacks
     [Header("Health")]
     public int maxHealth = 10; // Set enemy's health in Inspector
-    private int currentHealth;
+    public int currentHealth;
    
 
    //Fixed state variables
@@ -78,7 +78,7 @@ public class Player : MonoBehaviour, IDamageable
     private Vector3 previousPlatformPosition;
 
     // Other
-    Animator animator;
+    public Animator animator;
     private Rigidbody2D rb;
     private Rigidbody2D currentBatRb;
 
@@ -131,12 +131,10 @@ public class Player : MonoBehaviour, IDamageable
         {
             // Check jump force applied, jump height and player position before and after jump
             // Debug.Log("Jumping with force: " + jumpForce + " at position: " + transform.position);
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            isGrounded = false;
-            isJumping = true;
-            ++ jumpCount;
-            animator.SetBool("isJumping", !isGrounded);
-            animator.SetBool("isGrounded", false);
+            
+            StartCoroutine (LiftOff());
+            
+            
         //  audioSource.PlayOneShot(jumpSound, jumpVolume); // Play the sound
         }
 
@@ -227,6 +225,19 @@ public class Player : MonoBehaviour, IDamageable
             // Update the previous platform position
             previousPlatformPosition = platformTransform.position;
         }
+}
+
+IEnumerator LiftOff()
+{
+    animator.SetBool("isLiftoff", true);
+    yield return new WaitForSeconds(0.2f);
+    animator.SetBool("isJumping", true);
+    // audioSource.PlayOneShot(jumpSound, jumpVolume); // Play the sound
+    rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+    isJumping = true;
+    animator.SetBool("isLiftoff", false);
+    isGrounded = false;
+    ++ jumpCount;
 }
 
 IEnumerator Attack()

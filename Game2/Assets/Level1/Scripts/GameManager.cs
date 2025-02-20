@@ -206,6 +206,7 @@ public class GameManager : MonoBehaviour
        player.transform.position = respawnPosition;  // Move player to respawn location
        player.GetComponent<SpriteRenderer>().enabled = true;  // Make the player visible after enemy script makes invisible
        isRespawning = false;  // Reset respawn flag
+       player.currentHealth = player.maxHealth;  // Reset health
 
        //// Handle player immunity ////
        // player.GetComponent<PlayerScript>().isImmune = true;  // Activate immunity

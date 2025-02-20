@@ -774,10 +774,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 4
   moveAmount: 3
+  maxHealth: 1
   shouldMove: 0
   chaseDuration: 5
   chasePlayer: 0
   returningToPoint: 0
+  enemyDeath: {fileID: 0}
 --- !u!58 &186974271
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1343,10 +1345,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 3
   moveAmount: 4
+  maxHealth: 1
   shouldMove: 0
   chaseDuration: 5
   chasePlayer: 0
   returningToPoint: 0
+  enemyDeath: {fileID: 0}
 --- !u!58 &244490344
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1558,10 +1562,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 4
   moveAmount: 3
+  maxHealth: 1
   shouldMove: 0
   chaseDuration: 5
   chasePlayer: 1
   returningToPoint: 0
+  enemyDeath: {fileID: 0}
 --- !u!58 &366765335
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -5336,10 +5342,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 2
   moveAmount: 3
+  maxHealth: 1
   shouldMove: 0
   chaseDuration: 5
   chasePlayer: 0
   returningToPoint: 0
+  enemyDeath: {fileID: 0}
 --- !u!58 &1687875197
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -6022,10 +6030,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 3
   moveAmount: 3
+  maxHealth: 1
   shouldMove: 0
   chaseDuration: 5
   chasePlayer: 0
   returningToPoint: 0
+  enemyDeath: {fileID: 0}
 --- !u!58 &1991088844
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -6757,11 +6767,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7040939276320900806, guid: 5a215410eab794ea49b2cc37ebe264d6, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 22.3
+      value: -8.8
       objectReference: {fileID: 0}
     - target: {fileID: 7040939276320900806, guid: 5a215410eab794ea49b2cc37ebe264d6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.9
+      value: -4.5
       objectReference: {fileID: 0}
     - target: {fileID: 7040939276320900806, guid: 5a215410eab794ea49b2cc37ebe264d6, type: 3}
       propertyPath: m_LocalPosition.z

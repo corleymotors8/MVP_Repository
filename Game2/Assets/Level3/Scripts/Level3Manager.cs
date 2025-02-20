@@ -12,7 +12,14 @@ public class Level3Manager : MonoBehaviour
   public static Level3Manager Instance;
   private bool hasTriggeredDialogue = false;
   public bool playerCanMove = true; // Freeze player during dialogue
-   public bool playerKilledEnemy = false;
+  public bool playerKilledEnemy = false;
+
+// Access player 
+  Player player; // access player script
+//Access main camera
+  Camera mainCamera;
+
+
  private void Awake()
  {
 
@@ -25,8 +32,6 @@ public class Level3Manager : MonoBehaviour
       Instance = this;
       }
  }
-
-
 
 
  private void Start()
@@ -47,6 +52,7 @@ public void EndLevel()
 
  void Update()
   {
+
    
   }
 

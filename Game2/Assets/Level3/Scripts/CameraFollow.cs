@@ -11,6 +11,8 @@ public class CameraFollow : MonoBehaviour
 
     public float minX = -10f; // Set these to match your level bounds
 	public float maxX = 10f;
+	private float previousSize;
+	private float zoomLerpSpeed = 0.5f; // Temporarily increase speed when zoom changes
 
 	void Start()
 	{

@@ -74,7 +74,7 @@ public class EnemyLeap : MonoBehaviour, IDamageable, ICrushable
 	// Generate a random cooldown
 	float GetRandomCooldown()
 	{
-		return baseJumpCooldown + Random.Range(-1.5f, 0.5f);
+		return baseJumpCooldown + Random.Range(0, 0.5f);
 	}
 
 	// Detect ground
@@ -95,9 +95,9 @@ public class EnemyLeap : MonoBehaviour, IDamageable, ICrushable
 			{
 				playerScript.TakeDamage(attackDamage); // Apply damage to player
 
-				// Bounce enemy backwqards
+				// Bounce enemy backwards
 				Vector2 bounceDirection = (transform.position - collision.transform.position).normalized;
-				rb.AddForce(bounceDirection * 5f, ForceMode2D.Impulse);
+				rb.AddForce(bounceDirection * 10f, ForceMode2D.Impulse);
 			}
 		}
 	}
