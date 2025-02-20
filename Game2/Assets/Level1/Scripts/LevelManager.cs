@@ -44,7 +44,7 @@ public class LevelManager : MonoBehaviour
         GameManager gameManager = FindFirstObjectByType<GameManager>();
 
         // Reset playercan jump and player can attack
-        gameManager.playerCanJump = false;
+        gameManager.jetpackEnabled = false;
         gameManager.playerCanAttack = false;
         
         // Automatically find the player's Rigidbody2D

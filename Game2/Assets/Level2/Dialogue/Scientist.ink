@@ -44,20 +44,35 @@ The protocol requires it.
 Please select your enhancement.
 
     *[Let me leave this unforgiving ground]
-    -> SelectJump
+    -> SelectJetpack
     *[Let me strike my enemies down]
     -> SelectAttack
     
-=== SelectJump ===
+=== SelectJetpack ===
 Intriguing, subject displays an evasive nature. 
 
 This will be a highly elucidating harvest.
-# jump_ability
+# jetpack_ability
 
 
 We have equipped you with thrusters. Go on, give them a spin. 
 # unfreeze_player
-# wait_for_jump
+# wait_for_jetpack
+
+You feel powerful now, don't you.
+-> DONE
+
+
+=== SelectAttack ===
+Intriguing, subject displays an aggressive nature.
+#attack_ability
+#wait_for_attack
+
+We have transmitted an attack function. Try it out.
+
+You feel powerful now don't you. Please proceed to the exit.
+-> END
+
 
 
 

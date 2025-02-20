@@ -10,7 +10,6 @@ public class Level3Manager : MonoBehaviour
  
  
   public static Level3Manager Instance;
-  private bool hasTriggeredDialogue = false;
   public bool playerCanMove = true; // Freeze player during dialogue
   public bool playerKilledEnemy = false;
 

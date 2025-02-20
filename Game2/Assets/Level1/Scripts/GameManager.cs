@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
    public int playerLives = 1;
    private bool isRespawning = false;
    public bool playerCanMove = true; // Freeze player during dialogue
-   public bool playerCanJump = false; // Player jump ability
+   public bool jetpackEnabled = false; // Player jump ability
    public bool playerCanDoubleJump = false; // Player double jump ability
    public bool playerCanAttack = false; // Player attack ability
 
@@ -60,10 +60,10 @@ public class GameManager : MonoBehaviour
 
        // Load powerups
        LoadPowerups(); // Call this in Start()
-        if (playerPowerups.Contains("jump_ability"))
+        if (playerPowerups.Contains("jetpack_ability"))
         {
-        GameManager.Instance.playerCanJump = true;
-        Debug.Log("Player has Jump Ability!");
+        GameManager.Instance.jetpackEnabled = true;
+        Debug.Log("Player has Jetpack");
         }
 
         //Reset respawn position

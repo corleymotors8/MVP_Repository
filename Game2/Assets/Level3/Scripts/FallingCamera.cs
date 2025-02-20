@@ -32,10 +32,8 @@ public class CameraFollowFall : MonoBehaviour
             if (playerRb != null)
             {
                 playerRb.gravityScale = fallGravity;
-                Debug.Log($"Set new gravity scale: {fallGravity}");
                 
                 // Verify the change immediately
-                Debug.Log($"Actual gravity scale after change: {playerRb.gravityScale}");
                 
                 isFollowing = true;
             }
@@ -54,7 +52,6 @@ public class CameraFollowFall : MonoBehaviour
                 playerScript.preventRespawn = true;
                 //Set animator FallingFast to true
                 playerScript.animator.SetBool("FallingFast", true);
-                Debug.Log("Set preventRespawn to true");
             }
             else
             {
@@ -70,7 +67,6 @@ public class CameraFollowFall : MonoBehaviour
             // Periodically verify gravity scale hasn't been changed by something else
             if (playerRb.gravityScale != fallGravity)
             {
-                Debug.LogWarning($"Gravity scale changed unexpectedly to: {playerRb.gravityScale}");
                 playerRb.gravityScale = fallGravity;
                 playerRb.linearVelocity = new Vector2(playerRb.linearVelocity.x, Mathf.Max(playerRb.linearVelocity.y, -5f)); // -5f is max fall speed
 

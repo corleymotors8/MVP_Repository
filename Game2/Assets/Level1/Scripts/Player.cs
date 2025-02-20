@@ -10,7 +10,6 @@ public class Player : MonoBehaviour, IDamageable
     // Audio Clips
     private AudioSource audioSource; // Reference to the AudioSource
     public AudioClip landSound;
-    public AudioClip jumpSound;
     public AudioClip deathSound;
     public AudioClip stompSound;
     public AudioClip offLadder;
@@ -36,6 +35,7 @@ public class Player : MonoBehaviour, IDamageable
     [Header("Health")]
     public int maxHealth = 10; // Set enemy's health in Inspector
     public int currentHealth;
+    private bool isJumping;
    
 
    //Fixed state variables
@@ -46,7 +46,6 @@ public class Player : MonoBehaviour, IDamageable
     [HideInInspector]
     public bool isFacingRight = true;
     public bool isGrounded = true;
-    private bool isJumping = false;
     [HideInInspector]
     public bool isWalking = false;
      [HideInInspector]
@@ -102,7 +101,9 @@ public class Player : MonoBehaviour, IDamageable
 
    // Update is called once per frame
    void Update()
- {
+    {
+
+
     //Insant player respawn button for debugging if / key hit
     if (Input.GetKeyDown(KeyCode.Slash))
     {
@@ -122,30 +123,8 @@ public class Player : MonoBehaviour, IDamageable
 
     }
 
-    // Handle left-right & up-down movement
-    horizontalInput = Input.GetAxis("Horizontal");
-    verticalInput = Input.GetAxis("Vertical");  
 
-     // Single jump (not rideable enemy)
-    if (gameManager.playerCanJump && gameManager.playerCanMove && Input.GetButtonDown("Jump") && isGrounded && jumpCount == 0)
-        {
-            // Check jump force applied, jump height and player position before and after jump
-            // Debug.Log("Jumping with force: " + jumpForce + " at position: " + transform.position);
-            
-            StartCoroutine (LiftOff());
-            
-            
-        //  audioSource.PlayOneShot(jumpSound, jumpVolume); // Play the sound
-        }
 
-    // Double jump (not on rideable enemy)
-    else if (gameManager.playerCanDoubleJump && Input.GetButtonDown("Jump") && !isGrounded && jumpCount == 1)
-    {
-        // Debug.Log("Double jumping with force: " + doubleJumpForce + " at position: " + transform.position);
-        rb.linearVelocity = new Vector2(rb.linearVelocity.x, doubleJumpForce);
-        audioSource.PlayOneShot(jumpSound, jumpVolume); // Play the sound
-        ++ jumpCount;
-    }
 
     // Attacking
     if (gameManager.playerCanAttack && Input.GetKeyDown(KeyCode.B))
@@ -153,10 +132,10 @@ public class Player : MonoBehaviour, IDamageable
         StartCoroutine(Attack());
         
     }
-
-    // *** Normal player movement *** ///
        
-        // Walking on ground
+    // Walking on ground
+    horizontalInput = Input.GetAxis("Horizontal");
+    verticalInput = Input.GetAxis("Vertical");  
         if (!canClimb & gameManager.playerCanMove) // Not on ladder
         {
         rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
@@ -172,7 +151,7 @@ public class Player : MonoBehaviour, IDamageable
             isWalking = false;
         }
        
-
+    // Climbing
         if (canClimb) // On ladder
         {
         rb.linearVelocity = new Vector2(horizontalInput * speed/2, verticalInput * (speed/1.5f)); // Slow horizontal movement if on ladder
@@ -211,7 +190,7 @@ public class Player : MonoBehaviour, IDamageable
         else
         {
         isFalling = false;
-}
+        }
 
     // Keep player on platform
      if (platformTransform != null)
@@ -227,18 +206,6 @@ public class Player : MonoBehaviour, IDamageable
         }
 }
 
-IEnumerator LiftOff()
-{
-    animator.SetBool("isLiftoff", true);
-    yield return new WaitForSeconds(0.2f);
-    animator.SetBool("isJumping", true);
-    // audioSource.PlayOneShot(jumpSound, jumpVolume); // Play the sound
-    rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-    isJumping = true;
-    animator.SetBool("isLiftoff", false);
-    isGrounded = false;
-    ++ jumpCount;
-}
 
 IEnumerator Attack()
 {

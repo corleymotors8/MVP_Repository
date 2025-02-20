@@ -260,19 +260,19 @@ private void ContinueStory()
             }
 
             // TAG: Give jump ability
-            if (tag == "jump_ability")
+            if (tag == "jetpack_ability")
             {
-                gameManager.playerCanJump = true;
-                GameManager.Instance.AddPowerup("jump_ability");
+                gameManager.jetpackEnabled = true;
+                GameManager.Instance.AddPowerup("jetpack_ability");
 
             }
 
             //TAG: Wait for jump
-            if (tag == "wait_for_jump")
+            if (tag == "wait_for_jetpack")
             {
                 CanAdvanceDialogue = false;
                 Debug.Log("Setting prompt to false");
-                StartCoroutine(WaitForJump());
+                StartCoroutine(WaitForJetpack());
             }
 
             // TAG: Attack ability
@@ -366,7 +366,7 @@ private void DisplayChoices()
    }
 
 /// Level-specific coroutines
- private System.Collections.IEnumerator WaitForJump() // Wait for player to leap off edge
+ private System.Collections.IEnumerator WaitForJetpack() // Wait for player to leap off edge
     {
         while (!Level2Manager.Instance.playerJumped)
         {
@@ -390,6 +390,7 @@ private void DisplayChoices()
         {
             enterPrompt.SetActive(false);
             continueIcon.SetActive(false);
+            gameManager.playerCanMove = true;
 
             yield return null;  // Keep waiting until player has jumped
         }

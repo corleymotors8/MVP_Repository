@@ -7,9 +7,11 @@ public class MovingPlatform : MonoBehaviour
     public float moveLeftDistance = 5f;   // Distance to move left
     public float moveRightDistance = 5f;  // Distance to move right
     public bool startRight = true;     // Whether the platform starts moving right
+    
 
     private Vector3 startPosition;
     private bool movingRight;
+    public bool rideable = false;
 
     void Start()
     {
@@ -41,15 +43,19 @@ public class MovingPlatform : MonoBehaviour
 
   private void OnTriggerEnter2D(Collider2D other)
 {
-    if (other.CompareTag("Player"))
+    if (rideable && other.CompareTag("Player"))
     {
         StartCoroutine(SetParentAfterFrame(other.transform));
+    }
+    if (!rideable && other.CompareTag("Player"))
+    {
+        speed = 2;
     }
 }
 
 private void OnTriggerExit2D(Collider2D other)
 {
-    if (other.CompareTag("Player"))
+    if (rideable && other.CompareTag("Player"))
     {
         StartCoroutine(ClearParentAfterFrame(other.transform));
     }
