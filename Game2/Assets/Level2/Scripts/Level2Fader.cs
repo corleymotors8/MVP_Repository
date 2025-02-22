@@ -51,7 +51,7 @@ private CanvasGroup fadePanel;
         else
         {
             // Faster fade from 0.98 to 0
-            float remainingT = (t - 0.3f) / 0.7f;
+            float remainingT = (t - 0.2f) / 0.8f;
             fadePanel.alpha = Mathf.Lerp(0.98f, 0f, remainingT);
         }
         
@@ -59,6 +59,34 @@ private CanvasGroup fadePanel;
     }
     
     fadePanel.alpha = 0;
+}
+
+// Reverse fade in to restore the black panel
+public IEnumerator FadeOut()
+{
+    Debug.Log("Level2Fader begun. Fading out");
+    if (fadePanel == null)
+    {
+        Debug.LogError("Attempting to fade with null CanvasGroup!");
+        yield break;
+    }
+
+    fadePanel.alpha = 0;
+    float duration = 4f;
+    float elapsedTime = 0;
+
+    while (elapsedTime < duration)
+    {
+        elapsedTime += Time.deltaTime;
+        float t = elapsedTime / duration;
+
+        fadePanel.alpha = Mathf.Lerp(0f, 1f, t);
+
+        yield return null;
+    }
+
+    fadePanel.alpha = 1;
+
 }
 
 }

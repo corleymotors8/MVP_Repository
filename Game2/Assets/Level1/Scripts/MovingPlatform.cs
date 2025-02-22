@@ -8,6 +8,8 @@ public class MovingPlatform : MonoBehaviour
     public float moveRightDistance = 5f;  // Distance to move right
     public bool startRight = true;     // Whether the platform starts moving right
     
+    AudioSource audioSource;
+    public AudioClip landSound;
 
     private Vector3 startPosition;
     private bool movingRight;
@@ -15,6 +17,12 @@ public class MovingPlatform : MonoBehaviour
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+        //add component audiosource
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
         startPosition = transform.position;
         movingRight = startRight;
     }
@@ -46,6 +54,7 @@ public class MovingPlatform : MonoBehaviour
     if (rideable && other.CompareTag("Player"))
     {
         StartCoroutine(SetParentAfterFrame(other.transform));
+        audioSource.PlayOneShot(landSound, 0.2f);
     }
     if (!rideable && other.CompareTag("Player"))
     {

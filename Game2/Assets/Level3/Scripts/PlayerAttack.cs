@@ -49,6 +49,7 @@ public class PlayerAttack : MonoBehaviour
                 {
                     Vector2 knockbackDirection = (collision.transform.position - transform.position).normalized;
                     enemyRb.AddForce(knockbackDirection * 5f, ForceMode2D.Impulse);
+                    Debug.Log("Enemy knocked back");
                 }    
             }
 

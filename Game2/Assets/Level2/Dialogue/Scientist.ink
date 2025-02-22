@@ -3,6 +3,7 @@
 === Main ===
 I'm sorry we had to destroy you.
 
+
     *[How many times has this happened?]
         -> NotTime
     *[Why am I here?]
@@ -11,66 +12,65 @@ I'm sorry we had to destroy you.
         -> NotTime
 
 === NotTime ===
-Yes.
+...
 
-Yes, those are very satisfactory questions.
+Perhaps you may learn, in time. 
 
-Perhaps you may learn, in time.
+For now, I have a question for you. 
 
-For now, I have a question for you.
-
-Do you feel fully...satisifed with your powers?
+Are you powerful?
 
     *[No]
     -> ChoiceTime1
     *[Yes]
-        Are you sure?
-            ** [Yes]
-            -> NoAbilities
-            ** [No]
-            -> ChoiceTime1
-            
-=== NoAbilities ===
-A most unusual response. 
+    -> ChoiceTime1
 
-99.99% of subjects request enhancement.
-
-Unfortunately we cannot proceed without enhancement.
-
-The protocol requires it.
--> ChoiceTime1
 
 === ChoiceTime1 ===
-Please select your enhancement.
+
+DEBUG LINE OF DIALOGUE TO CHECK IF LENGTH IS ISSUE
+
+No you are not. 
+
+But we will enhance you. 
+
+Now, select your enhancement.
 
     *[Let me leave this unforgiving ground]
     -> SelectJetpack
     *[Let me strike my enemies down]
     -> SelectAttack
     
-=== SelectJetpack ===
+=== SelectJetpack ==
+...
+
 Intriguing, subject displays an evasive nature. 
 
 This will be a highly elucidating harvest.
 # jetpack_ability
-
-
-We have equipped you with thrusters. Go on, give them a spin. 
 # unfreeze_player
 # wait_for_jetpack
 
-You feel powerful now, don't you.
+We have equipped you with thrusters. Try them with your "spacebar". 
+
+
+You feel powerful now, don't you. Proceed to the exit.
 -> DONE
 
 
 === SelectAttack ===
+...
+
 Intriguing, subject displays an aggressive nature.
-#attack_ability
+
 #wait_for_attack
+#attack_ability
+#unfreeze_player
 
-We have transmitted an attack function. Try it out.
+We have transmitted an attack function. Utilize it with your "b" key.
+ 
+You feel powerful now don't you. Proceed to the exit.
 
-You feel powerful now don't you. Please proceed to the exit.
 -> END
 
 

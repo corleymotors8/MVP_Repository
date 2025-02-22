@@ -52,6 +52,11 @@ public class CameraFollowFall : MonoBehaviour
                 playerScript.preventRespawn = true;
                 //Set animator FallingFast to true
                 playerScript.animator.SetBool("FallingFast", true);
+                // Turn off freeze rotation on z value
+                playerRb.freezeRotation = false;
+                // Apply rotating force
+                playerRb.AddTorque(100f);
+
             }
             else
             {

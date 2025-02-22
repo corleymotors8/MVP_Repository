@@ -494,7 +494,7 @@ GameObject:
   - component: {fileID: 5846828337567693288}
   - component: {fileID: 5829368045845955953}
   m_Layer: 5
-  m_Name: FadePanel
+  m_Name: FadeToBlackPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

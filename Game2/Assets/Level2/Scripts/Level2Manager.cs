@@ -57,16 +57,18 @@ public class Level2Manager : MonoBehaviour
    {
     ResetPowerups();	
    
-   { 
-    // Wait a frame before starting the fade to ensure everything is initialized
-    // StartCoroutine(StartLevelFade());
-    }
+//    { 
+//     //Wait a frame before starting the fade to ensure everything is initialized
+        StartCoroutine(StartLevelFade());
+//     }
 
    }
 
    void ResetPowerups()
     {
     GameManager.Instance.playerPowerups.Clear();
+    GameManager.Instance.jetpackEnabled = false;
+    GameManager.Instance.playerCanAttack = false;
     PlayerPrefs.DeleteKey("PlayerPowerups"); // Clears stored power-ups
     Debug.Log("Power-ups reset!");
     }
@@ -101,6 +103,9 @@ public void EndLevel()
 {
     //Fade down music
     StartMusicFade();
+
+    //Start fade out
+    StartCoroutine(fadeController.FadeOut());
     
     // Wait 4 seconds then end level
     Invoke("LoadNextLevel", 4f);

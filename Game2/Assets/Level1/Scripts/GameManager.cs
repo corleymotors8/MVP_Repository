@@ -126,6 +126,7 @@ public class GameManager : MonoBehaviour
             {
             //playerLives--;
            
+            //Play death animation
             audioSource.PlayOneShot(deathSound, 0.4f);
             playerDeaths++;
             Invoke("RespawnPlayer", 1.0f);

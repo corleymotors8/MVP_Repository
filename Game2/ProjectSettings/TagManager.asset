@@ -9,11 +9,12 @@ TagManager:
   - LadderTop
   - Enemy
   - DeathPlatform
+  - PlayerAttack
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
   - PlatformLayer

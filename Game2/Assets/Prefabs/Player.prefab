@@ -595,7 +595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxChargeTime: 2
-  maxJumpForce: 80
+  maxJumpForce: 1
   minJumpForce: 5
   fallGravityScale: 0.25
   normalGravityScale: 9

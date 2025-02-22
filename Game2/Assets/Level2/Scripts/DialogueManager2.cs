@@ -16,6 +16,7 @@ public class DialogueManager2 : MonoBehaviour
    [SerializeField] private TextMeshProUGUI dialogueText;
    [SerializeField] private GameObject enterPrompt;
    [SerializeField] private GameObject exitPrompt;
+   public string currentNPC { get; private set; } = "";
 
 
    [Header("Choices UI")]
@@ -45,12 +46,18 @@ private bool npc3Talking = false;
    public AudioClip npc2;
    public AudioClip npc3;
 
+private Coroutine continuePromptCoroutine;
+private Coroutine exitPromptCoroutine;
+
 
    private static DialogueManager2 instance;
    // Declare gameManager
     private GameManager gameManager;
    // Declare crusher
     private Crusher crusher;
+
+private float inputCooldown = 0.1f; // Adjust this value as needed
+private float lastInputTime = 0f;
 
    
 
@@ -101,72 +108,106 @@ private bool npc3Talking = false;
    }
 
 
- private void Update()
+private void Update()
 {
-   if (!dialogueIsPlaying)
-   {
-       return;
-   }
+    if (!dialogueIsPlaying)
+    {
+        return;
+    }
 
-
-  // Check for input to advance dialogue
-  if (Input.GetKeyDown(KeyCode.Return) && currentStory.currentChoices.Count == 0 && CanAdvanceDialogue)
-   {
-       Debug.Log("Return key pressed, advancing dialogue.");
-       ContinueStory();
-   }
-   // If !CanAdvanceDialogue, game is waiting for specific event
-   else if((Input.GetKeyDown(KeyCode.Return) && currentStory.currentChoices.Count == 0 && !CanAdvanceDialogue))
-   {
-       Debug.Log("Return key pressed, but dialogue is waiting for game event.");
-   }
-   else if (Input.GetKeyDown(KeyCode.X))
-   {
-       Debug.Log("X key pressed, exiting dialogue.");
-       ExitDialogueMode();
-   }
+    // Check for input to advance dialogue with cooldown
+    if (Input.GetKeyDown(KeyCode.Return) && 
+        currentStory.currentChoices.Count == 0 && 
+        CanAdvanceDialogue && 
+        Time.time - lastInputTime >= inputCooldown)
+    {
+        Debug.Log($"Return key pressed at time: {Time.time}");
+        lastInputTime = Time.time;
+        ContinueStory();
+    }
+    else if((Input.GetKeyDown(KeyCode.Return) && currentStory.currentChoices.Count == 0 && !CanAdvanceDialogue))
+    {
+        Debug.Log("Return key pressed, but dialogue is waiting for game event.");
+    }
+    else if (Input.GetKeyDown(KeyCode.X))
+    {
+        Debug.Log("X key pressed, exiting dialogue.");
+        ExitDialogueMode();
+    }
 }
 
 
 // Function for typewriter effect
    private System.Collections.IEnumerator DisplayLine (string line)
    {
-       // empty the dialogue text
-       dialogueText.text = "";
+    // Reset text and hide UI elements before typing
+    dialogueText.text = "";
+    continueIcon.SetActive(false);
+    enterPrompt.SetActive(false);
+    HideChoices();
 
+    // Type out the dialogue character by character
+    foreach (char letter in line.ToCharArray())
+    {
+        dialogueText.text += letter;
+        yield return new WaitForSeconds(typingSpeed);
+    }
 
-       // hide items while text is typing
-       continueIcon.SetActive(false);
-       enterPrompt.SetActive(false);
-       HideChoices();
-      
-       // Display letters one at a time
-       foreach (char letter in line.ToCharArray())
-       {
-           dialogueText.text += letter;
-           yield return new WaitForSeconds(typingSpeed);
-       }
+    // After text is fully displayed, check conditions
+    DisplayChoices();
 
+    // **Cancel any existing prompt coroutines before deciding which to show**
+    if (exitPromptCoroutine != null)
+    {
+        StopCoroutine(exitPromptCoroutine);
+        exitPromptCoroutine = null;
+    }
+    if (continuePromptCoroutine != null)
+    {
+        StopCoroutine(continuePromptCoroutine);
+    }
 
-       // Show continue icon when text is done typing
-       continueIcon.SetActive(true);
-       DisplayChoices();
-       enterPrompt.SetActive(true);
-   }
-
-
-  public void EnterDialogueMode(TextAsset inkJSON)
-{
-   Debug.Log("EnterDialogueMode called");
-   currentStory = new Ink.Runtime.Story(inkJSON.text);
-   dialoguePanel.SetActive(true);
-   dialogueIsPlaying = true;
-   gameManager.playerCanMove = false;
-
-
-   ContinueStory();
+    // **Decide which prompt to show**
+    if (currentStory.currentChoices.Count == 0 && !IsWaitingForEvent() && currentStory.canContinue)
+    {
+        continuePromptCoroutine = StartCoroutine(ShowContinuePromptWithDelay());
+    }
+    else if (currentStory.currentChoices.Count == 0 &&!currentStory.canContinue)
+    {
+        exitPromptCoroutine = StartCoroutine(ShowExitPromptWithDelay());
+    }
 }
 
+
+public void EnterDialogueMode(TextAsset inkJSON)
+{
+    Debug.Log("=== EnterDialogueMode START ===");
+    currentStory = new Ink.Runtime.Story(inkJSON.text);
+    dialoguePanel.SetActive(true);
+    dialogueIsPlaying = true;
+    gameManager.playerCanMove = false;
+    //Disable enter and exit prompts
+    enterPrompt.SetActive(false);
+    exitPrompt.SetActive(false);
+
+    //Check enter and exit prompt canvas Status
+
+    // Instead of calling Continue() immediately, check currentText first
+    string firstLine = currentStory.currentText;
+
+    if (string.IsNullOrEmpty(firstLine) && currentStory.canContinue)
+    {
+        firstLine = currentStory.Continue();  // Only call Continue() if necessary
+    }
+
+    if (displayLineCoroutine != null)
+    {
+        StopCoroutine(displayLineCoroutine);
+    }
+    displayLineCoroutine = StartCoroutine(DisplayLine(firstLine));
+    Invoke("PlayDialogueAudio", 0.2f);
+
+}
 
    public void ExitDialogueMode()
    {
@@ -175,6 +216,7 @@ private bool npc3Talking = false;
        npc2Talking = false;
        dialogueIsPlaying = false;
        dialoguePanel.SetActive(false);
+        
         // Hide both prompts when dialogue ends
         enterPrompt.SetActive(false);
         exitPrompt.SetActive(false);
@@ -194,56 +236,42 @@ private bool npc3Talking = false;
 
 private void ContinueStory()
 {
-   Debug.Log("Calling ContinueStory. Can continue: " + currentStory.canContinue);
+     Debug.Log("=== ContinueStory START ===");
 
+    // **RESET PANELS IMMEDIATELY BEFORE CHANGING ANYTHING**
+    enterPrompt.SetActive(false);
+    exitPrompt.SetActive(false);
 
-   if (currentStory.canContinue)
-   {
-       if (displayLineCoroutine != null)
-       {
-           StopCoroutine(displayLineCoroutine);
-       }
+    // **CHECK FOR CHOICES BEFORE CONTINUING**
+    if (currentStory.currentChoices.Count > 0)
+    {
+        Debug.Log("Choices detected before continuing. Keeping continue panel hidden.");
+        return; // Prevent displaying continue panel
+    }
 
+    // **CHECK IF THERE IS MORE DIALOGUE**
+    if (currentStory.canContinue)
+    {
+        if (displayLineCoroutine != null)
+        {
+            StopCoroutine(displayLineCoroutine);
+        }
 
-      displayLineCoroutine = StartCoroutine(DisplayLine(currentStory.Continue()));
-     Invoke("PlayDialogueAudio", 0.2f);
+        string nextLine = currentStory.Continue();
+        Debug.Log("Next line from story: " + nextLine);
+        displayLineCoroutine = StartCoroutine(DisplayLine(nextLine));
+        Invoke("PlayDialogueAudio", 0.2f);
 
-       
-       // Show "Press Enter to Continue" prompt
-        // enterPrompt.SetActive(true);
-        exitPrompt.SetActive(false);
-  }
-  else if (currentStory.currentChoices.Count == 0)
-   {
-      Debug.Log("No more choices, exiting dialogue mode from ContinueStory.");
-      StartCoroutine(WaitBeforeExit());
-       // Show "Press X to Exit" prompt
-        enterPrompt.SetActive(false);
-        // exitPrompt.SetActive(true);
-   }
+    }
+
+    Debug.Log("=== ContinueStory END ===");
+
 
 //    Log all tags at each point in the story
        foreach (var tag in currentStory.currentTags)
        {
            Debug.Log("Tag found: " + tag);
 
-            // TAG: NPC1 talking
-            if (tag == "npc1")
-            {
-                npc1Talking = true;
-            }
-
-            // TAG: NPC2 talking
-            if (tag == "npc2")
-            {
-                npc2Talking = true;
-            }
-
-            // TAG: NPC3 talking
-            if (tag == "npc3")
-            {
-               npc3Talking = true;
-            }
             
             // TAG: Block raise
             if (tag == "block_raise")
@@ -263,6 +291,10 @@ private void ContinueStory()
             if (tag == "jetpack_ability")
             {
                 gameManager.jetpackEnabled = true;
+                //Access jetpack script
+                JetpackController jetpack = FindFirstObjectByType<JetpackController>();
+                //Set max jump force to 25
+                jetpack.maxJumpForce = 45f;
                 GameManager.Instance.AddPowerup("jetpack_ability");
 
             }
@@ -294,25 +326,38 @@ private void ContinueStory()
 
 }
 
+  // Handles which audio to play
+  public void SetCurrentNPC(string npc)
+    {
+        currentNPC = npc;
+        Debug.Log("Current NPC set to: " + currentNPC);
+    }
+
+
+
 private void PlayDialogueAudio()
 {
-    if (npc1Talking)
+    if (currentNPC == "npc1")
     {
         audioSource.PlayOneShot(npc1, 0.1f);
+        Debug.Log("Playing npc1 voice.");
     }
-    else if (npc2Talking)
+    else if (currentNPC == "npc2")
     {
         audioSource.PlayOneShot(npc2, 0.1f);
+        Debug.Log("Playing npc2 voice.");
     }
-    else if (npc3Talking)
+    else if (currentNPC == "npc3")
     {
-        audioSource.PlayOneShot(npc3, 0.05f);
+        audioSource.PlayOneShot(npc3, 0.1f);
+        Debug.Log("Playing npc2 voice.");
     }
-    else if (!npc1Talking && !npc2Talking)
+    else
     {
-        return;
-    }  
+        Debug.LogWarning("No valid NPC found for voice playback.");
+    }
 }
+
 
 
 private void DisplayChoices()
@@ -365,6 +410,56 @@ private void DisplayChoices()
    ContinueStory();
    }
 
+
+ private System.Collections.IEnumerator ShowContinuePromptWithDelay()
+{
+    yield return new WaitForSeconds(2.5f); // Wait 2.5 seconds
+
+    // **Ensure choices didn't appear during delay**
+    if (currentStory.currentChoices.Count == 0 && currentStory.canContinue) 
+    {
+        enterPrompt.SetActive(true);
+        continueIcon.SetActive(true);
+        Debug.Log("Continue prompt enabled after delay.");
+    }
+    else
+    {
+        Debug.Log("Choices appeared or dialogue ended during delay, skipping continue prompt.");
+    }
+    continuePromptCoroutine = null; // Reset coroutine reference
+}
+
+private System.Collections.IEnumerator ShowExitPromptWithDelay()
+{
+    
+    yield return new WaitForSeconds(2.5f); // Wait 2.5 seconds
+
+    // **Only show exit prompt if there’s no more dialogue**
+    if (!currentStory.canContinue)
+    {
+        exitPrompt.SetActive(true);
+        Debug.Log("Exit prompt enabled after delay.");
+    }
+    else
+    {
+        Debug.Log("Dialogue unexpectedly continued, skipping exit prompt.");
+    }
+    exitPromptCoroutine = null; // Reset coroutine reference
+}
+
+private bool IsWaitingForEvent()
+{
+    foreach (string tag in currentStory.currentTags)
+    {
+        if (tag.StartsWith("wait_for_"))
+        {
+            Debug.Log("Detected wait tag: " + tag);
+            return true;
+        }
+    }
+    return false;
+}
+
 /// Level-specific coroutines
  private System.Collections.IEnumerator WaitForJetpack() // Wait for player to leap off edge
     {
@@ -381,7 +476,7 @@ private void DisplayChoices()
 
     }
 
-     private System.Collections.IEnumerator WaitForAttack() // Wait for player to leap off edge
+     private System.Collections.IEnumerator WaitForAttack() // Wait for player to attack enemy
     {
        // Call spawnEnemy
         Level2Manager.Instance.spawnEnemy();
@@ -399,7 +494,6 @@ private void DisplayChoices()
             ContinueStory();
 
     }
-
 
 
 }

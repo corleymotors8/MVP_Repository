@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: f0028d7b853714e0995d5455c29a0804
+guid: f111e1ee14fe74458bb310d67f8d36de
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6926503335053283246
-    second: ContinueIcon_0
+      213: 3933200038137206939
+    second: green-exit-sign-in-pixel-art-style-vector-removebg-preview_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ContinueIcon_0
+      name: green-exit-sign-in-pixel-art-style-vector-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 0
-        width: 14
-        height: 14
+        x: 144
+        y: 160
+        width: 232
+        height: 231
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: eafc865c512ef1060800000000000000
-      internalID: 6926503335053283246
+      spriteID: b9898bf7898859630800000000000000
+      internalID: 3933200038137206939
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ContinueIcon_0: 6926503335053283246
+      green-exit-sign-in-pixel-art-style-vector-removebg-preview_0: 3933200038137206939
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

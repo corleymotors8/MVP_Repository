@@ -5,7 +5,7 @@ public class JetpackController : MonoBehaviour
 {
     [Header("Jetpack Settings")]
     [SerializeField] private float maxChargeTime = 2f;
-    [SerializeField] private float maxJumpForce = 20f;
+    [SerializeField] public float maxJumpForce = 20f;
     [SerializeField] private float minJumpForce = 5f;
     [SerializeField] private float fallGravityScale = 3f;
     [SerializeField] private float normalGravityScale = 9f;
@@ -43,9 +43,7 @@ public class JetpackController : MonoBehaviour
         // Start charging when spacebar is pressed
         if (gameManager.jetpackEnabled && gameManager.playerCanMove && Input.GetButtonDown("Jump") && isGrounded)
         {
-            Debug.Log("Jump button pressed");
             StartCharging();
-            Debug.Log("Charging");
         }
 
         // Continue charging while holding spacebar
@@ -57,19 +55,17 @@ public class JetpackController : MonoBehaviour
         // Launch when spacebar is released
         if (Input.GetButtonUp("Jump") && isCharging)
         {
-            Debug.Log("Launching");
             Launch();
         }
 
         // Check if falling
         if (rb.linearVelocity.y < -0.1f && !isGrounded)
         {
-            Debug.Log("Start falling");
             StartFalling();
         }
         else if (rb.linearVelocity.y >= -0.1f && isFalling)
         {
-            Debug.Log("Stop falling");
+
             StopFalling();
         }
     }
@@ -96,6 +92,7 @@ public class JetpackController : MonoBehaviour
 
     private void Launch()
     {
+        
         float chargeDuration = Mathf.Min(Time.time - chargeStartTime, maxChargeTime);
         float chargePercent = chargeDuration / maxChargeTime;
         float jumpForce = Mathf.Lerp(minJumpForce, maxJumpForce, chargePercent);
@@ -105,7 +102,6 @@ public class JetpackController : MonoBehaviour
         animator.SetBool("isPoweringUp", false);
         animator.SetBool("isLaunched", true);
         audioSource.Stop();
-        Debug.Log($"Launch - isPoweringUp: {animator.GetBool("isPoweringUp")}, isLaunched: {animator.GetBool("isLaunched")}");
 
 
         // Play launch sound
@@ -129,22 +125,13 @@ public class JetpackController : MonoBehaviour
         animator.SetBool("isFalling", true);
         rb.gravityScale = fallGravityScale;
         //Debug if gravity is being set on player
-        Debug.Log("Gravity scale set to: " + rb.gravityScale);
 
         // Play thruster sound
         audioSource.clip = thrusterSound;
         audioSource.loop = false;  
         audioSource.volume = maxVolume;
         audioSource.Play();
-        //Check if clip is isPlayingFallSound
-        if (audioSource.isPlaying)
-        {
-            Debug.Log("Thruster sound is playing");
-        }
-        else
-        {
-            Debug.Log("Thruster sound is not playing");
-        }
+      
     }
 }
 
@@ -155,7 +142,6 @@ public class JetpackController : MonoBehaviour
         animator.SetBool("isFalling", false);
         animator.SetBool("isLaunched", false);  // Add this line
         animator.SetBool("isPoweringUp", false); // Add this for safety
-        Debug.Log($"StopFalling - isPoweringUp: {animator.GetBool("isPoweringUp")}, isLaunched: {animator.GetBool("isLaunched")}, isFalling: {animator.GetBool("isFalling")}");
         rb.gravityScale = normalGravityScale;
         audioSource.Stop();
     }

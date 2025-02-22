@@ -54,6 +54,8 @@ public class Player : MonoBehaviour, IDamageable
     public bool canClimb = false;
      [HideInInspector]
     public bool isAttacking = false;
+    private bool isOnLadder = false;
+    private bool isActivelyClimbing = false;
 
     [HideInInspector]
     public int jumpCount = 0;
@@ -119,7 +121,6 @@ public class Player : MonoBehaviour, IDamageable
         if (gameManager != null)
         {
         gameManager.PlayerDied();
-        Debug.Log("Player fell out of camera view");
         }
 
     }
@@ -135,43 +136,80 @@ public class Player : MonoBehaviour, IDamageable
     }
        
     // Walking on ground
-    horizontalInput = Input.GetAxis("Horizontal");
-    verticalInput = Input.GetAxis("Vertical");  
-        if (!canClimb & gameManager.playerCanMove) // Not on ladder
+  // Only read input if player can move
+    if (gameManager.playerCanMove)
+    {
+        horizontalInput = Input.GetAxis("Horizontal");
+        verticalInput = Input.GetAxis("Vertical");  
+        
+        if (!canClimb) // Not on ladder
         {
-        rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
+            rb.linearVelocity = new Vector2(horizontalInput * speed, rb.linearVelocity.y);
         }
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.D))
         {
             isWalking = true;
-
         }
         else
         {
             isWalking = false;
         }
+    }
+    else
+    {
+        // Reset input values when player can't move
+        horizontalInput = 0;
+        verticalInput = 0;
+        rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+        isWalking = false;
+    }
        
-    // Climbing
+   // Climbing
         if (canClimb) // On ladder
         {
-        rb.linearVelocity = new Vector2(horizontalInput * speed/2, verticalInput * (speed/1.5f)); // Slow horizontal movement if on ladder
-        // Reduce gravity on player so doesn't slide down ladder
-        rb.gravityScale = 0;
-        isClimbing = true;
-        }
-        else
+            if (!isOnLadder)
             {
-            if (!isFallingJetPack) // Only reset gravity if NOT falling from jetpack
-                {
-                rb.gravityScale = 9;
-                }
-                isClimbing = false;
+                // Just got on ladder
+                isOnLadder = true;
+                rb.gravityScale = 0;
             }
 
-        if (canClimb && verticalInput != 0)
+            // Handle climbing movement
+            rb.linearVelocity = new Vector2(horizontalInput * speed/2, verticalInput * (speed/1.5f));
+            
+            // Only set climbing states when there's actual vertical movement
+            if (Mathf.Abs(verticalInput) > 0.1f)
+            {
+                if (!isActivelyClimbing)
+                {
+                    isActivelyClimbing = true;
+                    isClimbing = true;
+                    animator.SetBool("isClimbing", true);
+                }
+            }
+            else
+            {
+                // Player is on ladder but not moving vertically
+                isActivelyClimbing = false;
+                // Don't set isClimbing to false here to maintain the blend tree state
+            }
+        }
+        else
         {
-        animator.SetBool("isClimbing", true);
+            if (isOnLadder)
+            {
+                // Just got off ladder
+                isOnLadder = false;
+                isActivelyClimbing = false;
+                isClimbing = false;
+                animator.SetBool("isClimbing", false);
+                
+                if (!isFallingJetPack)
+                {
+                    rb.gravityScale = 9;
+                }
+            }
         }
 
         
@@ -274,7 +312,11 @@ public void PlayAttackSound()
  
    private void FixedUpdate()
    {
-    animator.SetFloat("climbSpeed", verticalInput);
+    // Update the blend tree parameter only when actively climbing
+        if (isActivelyClimbing)
+        {
+            animator.SetFloat("climbSpeed", verticalInput);
+        }
     
     //Trigger move animation (xVelocity) and jump animation (yVelocity)
       animator.SetFloat("xVelocity", Mathf.Abs(rb.linearVelocity.x));
@@ -286,21 +328,11 @@ public void PlayAttackSound()
    {
        if (other.CompareTag("Climbable"))
        {
-        //    Debug.Log("Player is on ladder");
+           Debug.Log("Player is on ladder");
            canClimb = true;
        }
-    
-    
-    //*** MORE PRECISE WAY TO HANDLE JUMPING TRANSITIONS BUT BUGGY ***////
-    //    if (other.CompareTag("Ground"))
-    //    {
-    //     isGrounded = true;
-    //     animator.SetBool("isJumping", false);
-    //    }
    }
        
-
-
    private void OnTriggerExit2D(Collider2D other)
    {
        if (other.CompareTag("Climbable"))
@@ -308,6 +340,7 @@ public void PlayAttackSound()
         //    Debug.Log("Player is off ladder");
            canClimb = false;
            animator.SetBool("isClimbing", false);
+           Debug.Log("Player is off ladder");
         // Play off ladder sound
         // Only play half duration
         // audioSource.PlayOneShot(offLadder, 0.2f);
@@ -325,7 +358,6 @@ public void PlayAttackSound()
        {
            isGrounded = true;
            animator.SetBool("isGrounded", true);
-           animator.SetBool("isJumping", false);
            jumpCount = 0;
            isJumping = false;
            isFalling = false;

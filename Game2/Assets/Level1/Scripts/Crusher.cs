@@ -70,7 +70,7 @@ public class Crusher : MonoBehaviour
         if (!isPlayingFallSound)
         {
        isPlayingFallSound = true;
-       audioSource.PlayOneShot(fallSound, 0.05f);
+       audioSource.PlayOneShot(fallSound, 0.1f);
         }
         
         // Move the block downward 
@@ -91,7 +91,7 @@ public class Crusher : MonoBehaviour
     {
         if (!isPlayingRisingSound)
         // Play rise sound
-        audioSource.PlayOneShot(riseSound, 0.08f);
+        audioSource.PlayOneShot(riseSound, 0.1f);
         isPlayingRisingSound = true;
 
         
@@ -146,7 +146,10 @@ public class Crusher : MonoBehaviour
     {
         if (isFalling && collision.gameObject.CompareTag("Player") && !player.isFalling)
         {
+            if (collision.contacts[0].normal.y > 0.5f)
+        {
             player.PlayerHitByEnemy();
+        }
 
         }
         if (isFalling && collision.gameObject.CompareTag("Enemy"))

@@ -10,6 +10,9 @@ public class NPCDialogueTrigger : MonoBehaviour
 
    [Header("Ink JSON")]
    [SerializeField] private TextAsset inkJSON;
+   
+   [Header("NPC Identifier")]
+    public string npcIdentifier;  // Set this in the Inspector for each NPC
 
    private bool playerInRange;
 
@@ -27,6 +30,8 @@ public class NPCDialogueTrigger : MonoBehaviour
            visualCue.SetActive(true);
            if (Input.GetKeyDown(KeyCode.E))
            {
+               DialogueManager2.GetInstance().SetCurrentNPC(npcIdentifier);
+
                DialogueManager2.GetInstance().EnterDialogueMode(inkJSON);
            }
        }

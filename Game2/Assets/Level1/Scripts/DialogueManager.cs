@@ -12,6 +12,7 @@ public class DialogueManager : MonoBehaviour
     public AudioClip dialoguePlaying1;
     public AudioClip dialoguePlaying2;
     public AudioClip dialoguePlaying3;
+    public AudioClip finalLeap;
     private int currentDialogueSound = 0;
     AudioSource audioSource;
 
@@ -314,6 +315,9 @@ void PlayEndLevelSound()
         {
             yield return null;  // Keep waiting until the rock has hit the ground
         }
+            //Play last death sound
+            audioSource.PlayOneShot(finalLeap, 0.2f);
+            
             // Access player script to prevent respawn
             player.preventRespawn = true;
             Debug.Log("Player has leapt off-screen, preventing respawn.");
