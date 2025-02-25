@@ -176,7 +176,7 @@ public class Player : MonoBehaviour, IDamageable
             }
 
             // Handle climbing movement
-            rb.linearVelocity = new Vector2(horizontalInput * speed/2, verticalInput * (speed/1.5f));
+            rb.linearVelocity = new Vector2(horizontalInput * speed/1.5f, verticalInput * (speed/1.25f));
             
             // Only set climbing states when there's actual vertical movement
             if (Mathf.Abs(verticalInput) > 0.1f)

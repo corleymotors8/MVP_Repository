@@ -43,6 +43,7 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
+            transform.parent = null;
             DontDestroyOnLoad(gameObject); // Persist across levels
         }
         else
@@ -218,7 +219,7 @@ public class GameManager : MonoBehaviour
        {
            audioSource = gameObject.AddComponent<AudioSource>();
        }
-        audioSource.PlayOneShot(respawnSound, 0.2f);
+        audioSource.PlayOneShot(respawnSound, 0.4f);
 
     //Reset player animation booleans
     player.GetComponent<Animator>().SetBool("isPoweringUp", false);

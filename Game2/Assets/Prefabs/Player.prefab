@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 710b11a7834ae43879075f811eff151a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  squishSnail: {fileID: 0}
+  squishSnail: {fileID: 8300000, guid: d360fcbf54c874ee981fe621981d5ae0, type: 3}
   attackDamage: 3
 --- !u!1 &8824841946515154926
 GameObject:
@@ -216,7 +216,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 17.96, y: 10.81, z: 0}
-  m_LocalScale: {x: 1.4149871, y: 1.3, z: 0.66428196}
+  m_LocalScale: {x: 2.19, y: 2.0120325, z: 1.0281208}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 3527594876441552718}
@@ -380,7 +380,7 @@ MonoBehaviour:
   deathSound: {fileID: 0}
   stompSound: {fileID: 0}
   offLadder: {fileID: 0}
-  hitByEnemy: {fileID: 0}
+  hitByEnemy: {fileID: 8300000, guid: e1120be3b77ba4a5ab5d182e039ee928, type: 3}
   footsteps:
   - {fileID: 8300000, guid: a922f6ccb8b624b02b14f29387fc731c, type: 3}
   - {fileID: 8300000, guid: 73544e8554b9b4058bb52648e2a2ff27, type: 3}
@@ -399,12 +399,14 @@ MonoBehaviour:
   - {fileID: 8300000, guid: bff48a89c622d4dfe9f596b898fd5642, type: 3}
   attackSounds:
   - {fileID: 8300000, guid: 4115862a0e45d48758b504870c425f72, type: 3}
+  - {fileID: 8300000, guid: c9937931592844a29a255bad42596a67, type: 3}
+  - {fileID: 8300000, guid: d1fa6b4a7f18a4ed4957d024804015e5, type: 3}
   moveSound: {fileID: 8300000, guid: 900effd2a7bf5455c81eae50d9104e10, type: 3}
   moveSoundVolume: 1
   jumpVolume: 1
-  landVolume: 0.03
-  speed: 7
-  jumpForce: 25
+  landVolume: 0
+  speed: 6
+  jumpForce: 30
   doubleJumpForce: 0
   attackCooldown: 0.5
   maxHealth: 10
@@ -595,12 +597,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxChargeTime: 2
-  maxJumpForce: 1
+  maxJumpForce: 55
   minJumpForce: 5
-  fallGravityScale: 0.25
+  fallGravityScale: 1
   normalGravityScale: 9
   poweringUpSound: {fileID: 8300000, guid: c37dc9a14a6d8478c9fd997af200ef1c, type: 3}
   launchSound: {fileID: 8300000, guid: 13b4d1c6b5f854a059d048b0cee8a236, type: 3}
   thrusterSound: {fileID: 8300000, guid: 0dfb3b9127f644afd9fa6c788039a429, type: 3}
-  maxVolume: 0.8
-  minVolume: 0.2
+  maxVolume: 0.4
+  minVolume: 0.1

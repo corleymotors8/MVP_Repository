@@ -2,7 +2,7 @@
 
 using UnityEngine;
 using System.Collections;
-using UnityEditor.EventSystems;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 public class Level3Manager : MonoBehaviour

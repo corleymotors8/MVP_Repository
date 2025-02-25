@@ -30,19 +30,24 @@ public class DialogueTrigger : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-         if (hasPlayedDialogue) // For some reason dialogue is playing twice. Solving for this bug
+         if (collision.gameObject.tag == "Player")
          {
+         
+         
+            if (hasPlayedDialogue) // For some reason dialogue is playing twice. Solving for this bug
+            {
              return;
+            }
+            else 
+            {
+            Debug.Log("DialogueTrigger triggered");
+            StartCoroutine(WaitForTwoCycles()); // Wait a bit before displaying dialogue
+            canTriggerLeapt = true; // Allow player to trigger end of level by jumping off screen
+            hasPlayedDialogue = true;
+            player.preventRespawn = true; // Prevent player from respawning
+            Debug.Log("Can player respawn? " + player.preventRespawn);
+            }
          }
-         else 
-         {
-         Debug.Log("DialogueTrigger triggered");
-         StartCoroutine(WaitForTwoCycles()); // Wait a bit before displaying dialogue
-        canTriggerLeapt = true; // Allow player to trigger end of level by jumping off screen
-        hasPlayedDialogue = true;
-        player.preventRespawn = true; // Prevent player from respawning
-        Debug.Log("Can player respawn? " + player.preventRespawn);
-        }
     }
 
     IEnumerator WaitForTwoCycles()
