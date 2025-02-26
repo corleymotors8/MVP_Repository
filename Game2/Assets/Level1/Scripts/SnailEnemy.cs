@@ -26,7 +26,7 @@ public class SnailEnemy : MonoBehaviour, IDamageable
     private float chaseTimer = 0f;
     public bool returningToPoint = false;
 
-    AudioSource audioSource;
+    public AudioSource audioSource;
     public AudioClip enemyDeath;
     
     public void Start()

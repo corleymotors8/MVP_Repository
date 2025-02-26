@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2308915129466763744}
   - component: {fileID: 3722800200049975894}
   - component: {fileID: -5983250763427522662}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: LeapingEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -182,7 +182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   baseJumpDistance: 4
   baseJumpHeight: 5
-  baseJumpCooldown: 1.5
+  baseJumpCooldown: 0.5
   maxHealth: 6
   attackDamage: 1
   enemyDeath: {fileID: 8300000, guid: 135b21404b68e4eaabc5b8107c76737f, type: 3}
