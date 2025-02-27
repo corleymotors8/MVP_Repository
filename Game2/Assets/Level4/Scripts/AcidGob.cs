@@ -10,14 +10,19 @@ public class AcidGob : MonoBehaviour
     private Vector3 startPosition;
     
     private Rigidbody2D rb;
+    Player player;
     private Animator animator;
     private bool isExploding = false;
+    private float initialInvulnerabilityTime = 0.1f; // Short time to ignore initial collisions
+    private float invulnerabilityTimer = 0f;
     
     public AudioClip splashSound;
     private AudioSource audioSource;
     
     void Awake()
     {
+        // Make gobs invulnerable for a short time to prevent colliding with enemy
+        invulnerabilityTimer = initialInvulnerabilityTime;
         // Get or add required components
         rb = GetComponent<Rigidbody2D>();
         if (rb == null)
@@ -45,8 +50,13 @@ public class AcidGob : MonoBehaviour
             collider.radius = 0.25f;
         }
     }
-    
-  public void Initialize(Vector3 dir, float spd, int dmg, float maxDist)
+
+    void Start()
+    {
+        player = FindFirstObjectByType<Player>();
+    }
+
+    public void Initialize(Vector3 dir, float spd, int dmg, float maxDist)
 {
     direction = dir;
     speed = spd;
@@ -55,7 +65,7 @@ public class AcidGob : MonoBehaviour
     startPosition = transform.position;
     
     // Make sure maxDistance is properly set
-    Debug.Log($"Initialize called with maxDist: {maxDist} - Start position: {startPosition}");
+    // Debug.Log($"Initialize called with maxDist: {maxDist} - Start position: {startPosition}");
     
     // Set velocity of rigidbody
     rb.linearVelocity = direction * speed;
@@ -83,38 +93,82 @@ void Update()
         float currentDistance = Vector3.Distance(startPosition, transform.position);
         if (currentDistance > maxDistance)
         {
-            Debug.Log($"Max distance exceeded: {currentDistance} > {maxDistance}");
+            // Debug.Log($"Max distance exceeded: {currentDistance} > {maxDistance}");
             Explode();
         }
+    }
+    // Reduce invulnerability timer
+    if (invulnerabilityTimer > 0)
+    {
+        invulnerabilityTimer -= Time.deltaTime;
     }
 }
     
-    void OnTriggerEnter2D(Collider2D other)
+void OnTriggerEnter2D(Collider2D other)
+{
+    // Skip collisions during initial invulnerability
+    if (invulnerabilityTimer > 0) return;
+    
+    // Prevent multiple collisions while exploding
+    if (isExploding) return;
+    
+    // Check if we hit the player
+    if (other.CompareTag("Player"))
     {
-        // Prevent multiple collisions while exploding
-        if (isExploding)
-            return;
-            
-        // Check if we hit the player
-        if (other.CompareTag("Player"))
+        Player player = other.GetComponent<Player>();
+        
+        if (player.shieldActive)
         {
+            // Determine hit direction
+            bool playerFacingRight = player.isFacingRight;
+            bool acidGobMovingRight = rb.linearVelocity.x > 0;
             
-            Player player = other.GetComponent<Player>();
-            if (player != null)
+            // Determine if hitting back/shell
+            bool hittingBack = (playerFacingRight && acidGobMovingRight) || 
+                              (!playerFacingRight && !acidGobMovingRight);
+            
+            if (hittingBack)
             {
-                // Call the damage function on the player
-                player.TakeDamage(damage); // Or custom damage method if player has one
-                Debug.Log("Acid gob hit player for " + damage + " damage");
+                // Hit on back/shell - damage shield and bounce
+                player.HitShield(); // Only call this when hitting the back
+                
+                // Check if shield is still active after being hit
+                if (player.shieldActive)
+                {
+                    // Reflect velocity
+                    Vector2 reflectedVelocity = new Vector2(-rb.linearVelocity.x, rb.linearVelocity.y);
+                    rb.linearVelocity = reflectedVelocity;
+                    return;
+                }
             }
-            
-            Explode();
+            else
+            {
+                // Hit on front - damage player directly, not shield
+                player.TakeDamage(damage);
+                Explode();
+                return;
+            }
         }
-        // Check if we hit terrain/walls
-        else if (other.gameObject.layer == 8 || other.CompareTag("Ground"))
-        {
-            Explode();
-        }
+        
+        // If we get here, either:
+        // 1. Shield was never active, or
+        // 2. Shield just broke from this hit
+        player.TakeDamage(damage);
+        Explode();
     }
+    // Check for AcidSnail
+    else if (other.GetComponent<AcidSnail>() != null)
+    {
+        AcidSnail snail = other.GetComponent<AcidSnail>();
+        snail.TakeDamage(damage);
+        Explode();
+    }
+    // Check if we hit terrain/walls
+    else if (other.gameObject.layer == 8 || other.CompareTag("Ground"))
+    {
+        Explode();
+    }
+}
     
     private void Explode()
 {
@@ -130,7 +184,7 @@ void Update()
     // Play splash sound if available
     if (audioSource != null && splashSound != null)
     {
-        audioSource.PlayOneShot(splashSound);
+        audioSource.PlayOneShot(splashSound, 0.07f);
     }
     
     // APPROACH 1: Try direct animator state control

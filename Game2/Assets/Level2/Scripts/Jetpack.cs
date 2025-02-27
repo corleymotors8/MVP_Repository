@@ -106,7 +106,7 @@ public class JetpackController : MonoBehaviour
 
         // Play launch sound
         audioSource.loop = false;
-        audioSource.PlayOneShot(launchSound);
+        audioSource.PlayOneShot(launchSound, 0.08f);
 
         // Apply force
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);

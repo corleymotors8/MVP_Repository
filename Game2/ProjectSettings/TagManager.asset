@@ -10,6 +10,7 @@ TagManager:
   - Enemy
   - DeathPlatform
   - PlayerAttack
+  - Wall
   layers:
   - Default
   - TransparentFX
@@ -17,12 +18,12 @@ TagManager:
   - Background
   - Water
   - UI
-  - PlatformLayer
   - 
-  - Enemy
-  - Platform
-  - PlayerLayer
   - 
+  - Ground
+  - Player
+  - Enemies
+  - Trigger
   - 
   - 
   - 

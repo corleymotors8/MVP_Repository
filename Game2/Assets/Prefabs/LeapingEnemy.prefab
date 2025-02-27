@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2308915129466763744}
   - component: {fileID: 3722800200049975894}
   - component: {fileID: -5983250763427522662}
-  m_Layer: 8
+  m_Layer: 10
   m_Name: LeapingEnemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}

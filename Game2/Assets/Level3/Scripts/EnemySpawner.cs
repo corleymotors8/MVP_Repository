@@ -10,8 +10,8 @@ public class EnemySpawner : MonoBehaviour
 	public Transform rightSpawn; // Right spawn point
 	public float safeSpawnDistance = 3f; // Minimum distance from player
 
-	public int maxEnemies = 5; // Max enemies allowed at once
-	public int totalSpawnable;
+	public int maxEnemies = 5; // Max enemies allowed at once (only spawns more if enemies killed)
+	public int totalSpawnable; // Total enemies allowed
 	private int totalSpawned;
 	AudioSource audioSource;
 	public AudioClip enemySpawn;
@@ -37,6 +37,7 @@ public class EnemySpawner : MonoBehaviour
 	{
 		if (other.CompareTag("Player") && !hasTriggered) // Ensure player triggers the spawner
 		{
+			// Debug.Log("Player entered spawner zone");
 			playerInZone = true;
 			TrySpawnEnemy(); // Start spawning process
 			hasTriggered = true; // Prevent multiple triggers
@@ -46,6 +47,7 @@ public class EnemySpawner : MonoBehaviour
 	public void EnemyDied()
 	{
 		currentEnemies--; // Reduce enemy count when one dies
+		Debug.Log("Enemy died, current enemies left: " + currentEnemies);
 		TrySpawnEnemy(); // Check if new enemy should be spawned
 	}
 
@@ -53,6 +55,7 @@ public class EnemySpawner : MonoBehaviour
 	{
 	if (!playerInZone || currentEnemies >= maxEnemies || isSpawning) return; // Prevent multiple coroutines
 	StartCoroutine(SpawnWithDelay());
+	Debug.Log("Spawn coroutine started");
 	}
 
    private IEnumerator SpawnWithDelay()
@@ -71,8 +74,11 @@ public class EnemySpawner : MonoBehaviour
 
 private void SpawnEnemy()
 {
-    Debug.Log("Total spawned = " + totalSpawned + " | Total spawnable = " + totalSpawnable);
-    if (totalSpawned >= totalSpawnable) return;
+    if (totalSpawned >= totalSpawnable) 
+    {
+        Debug.Log("Total spawnable reached. Done spawning.");
+        return;
+    }
     
     if (player == null) return; // Safety check
 
@@ -100,12 +106,13 @@ private void SpawnEnemy()
     }
 
     // Instantiate enemy at the adjusted position
-    GameObject newEnemy = Instantiate(prefabToSpawn, finalSpawnPosition, Quaternion.identity, transform); // ✅ Set parent to this spawner
-    // ✅ Explicitly set the spawner as the parent after instantiation
-    newEnemy.transform.SetParent(transform);
+    GameObject newEnemy = Instantiate(prefabToSpawn, finalSpawnPosition, Quaternion.identity, transform);
+    
+    // Explicitly set the spawner as the parent after instantiation
+    // newEnemy.transform.SetParent(transform);
 
-    // Ensure enemy faces correct direction
-    newEnemy.transform.localScale = new Vector3(spawnPoint == leftSpawn ? 1 : -1, 1, 1);
+    // Preserve the original scale from the prefab
+    newEnemy.transform.localScale = prefabToSpawn.transform.localScale;
 
     // Assign spawner reference to enemy
     EnemyLeap enemyScript = newEnemy.GetComponent<EnemyLeap>();
@@ -116,7 +123,6 @@ private void SpawnEnemy()
 
     currentEnemies++; // Track spawned enemies
     totalSpawned++; // Track total spawns
-    Debug.Log("Total spawned = " + totalSpawned);
 }
 
 public void ResetSpawner()

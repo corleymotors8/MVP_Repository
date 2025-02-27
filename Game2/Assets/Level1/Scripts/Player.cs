@@ -14,6 +14,9 @@ public class Player : MonoBehaviour, IDamageable
     public AudioClip stompSound;
     public AudioClip offLadder;
     public AudioClip hitByEnemy;
+    public AudioClip shieldBounce;
+    public AudioClip shieldBreak;
+    public AudioClip shieldRestore;
     public AudioClip[] footsteps;
     public AudioClip[] climbing;
     public AudioClip[] attackSounds;
@@ -32,10 +35,16 @@ public class Player : MonoBehaviour, IDamageable
     public float jumpForce = 5.0f;
     public float doubleJumpForce = 5.0f;
     public float attackCooldown = 0.5f; // Time between attacks
+    
     [Header("Health")]
     public int maxHealth = 10; // Set enemy's health in Inspector
+    [HideInInspector]
     public int currentHealth;
+    public int maxShieldHealth;
+    private int currentShieldHealth;
     private bool isJumping;
+    [HideInInspector]
+    public bool shieldActive = true;
    
 
    //Fixed state variables
@@ -83,6 +92,8 @@ public class Player : MonoBehaviour, IDamageable
     public Animator animator;
     private Rigidbody2D rb;
     private Rigidbody2D currentBatRb;
+    private SpriteRenderer crabSprite; // Use until we get proper shield animation
+    private Color originalColor; // Use until we get proper shield animation
 
     private LevelManager levelManager;  // Access LevelManager
     private GameManager gameManager;
@@ -90,6 +101,15 @@ public class Player : MonoBehaviour, IDamageable
    // Start is called once before the first execution of Update after the MonoBehaviour is created
    void Start()
    {
+       currentShieldHealth = maxShieldHealth;
+
+       //Placeholder until proper shield animation
+       crabSprite = GetComponent<SpriteRenderer>(); // Automatically get the SpriteRenderer
+    if (crabSprite != null)
+    {
+        originalColor = crabSprite.color; // Store the original color
+    }
+       
        gameManager = FindFirstObjectByType<GameManager>();  // Find and assign GameManager
        levelManager = FindFirstObjectByType<LevelManager>();  // Find and assign LevelManager
        startingPosition = transform.position; // for debugging
@@ -406,5 +426,36 @@ public void PlayAttackSound()
     // Make player invisible
     GetComponent<SpriteRenderer>().enabled = false;
 }
+
+    public void HitShield()
+    {
+        // Play shield bounce sound
+       
+        audioSource.PlayOneShot(shieldBounce, 0.5f);
+        -- currentShieldHealth;
+        Debug.Log("Shield hit. Current shield health: " + currentShieldHealth);
+        if (currentShieldHealth <= 0)
+        {
+            // Play shield break sound
+            Debug.Log("Shield broken");
+            crabSprite.color = Color.red; // Change to red
+
+            audioSource.PlayOneShot(shieldBreak, 0.9f);
+            //Wait five seconds then restore shield
+            shieldActive = false;
+            StartCoroutine(RestoreShield());
+        }
+    }
+
+    private IEnumerator RestoreShield()
+    {
+        yield return new WaitForSeconds(5f);
+        currentShieldHealth = maxShieldHealth;
+        shieldActive = true;
+        crabSprite.color = originalColor; // Restore original color
+        audioSource.PlayOneShot(shieldRestore, 0.9f);
+        Debug.Log("Shield restored");
+    }
+
 
 }

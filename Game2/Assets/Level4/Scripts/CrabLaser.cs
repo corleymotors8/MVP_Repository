@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 
@@ -205,6 +207,7 @@ private void FireLaser()
   
    private void UpdateAimLine(float angle)
    {
+       
        // Calculate direction based on angle
        Vector3 direction = Quaternion.Euler(0, 0, angle) * Vector3.right;
 
@@ -239,168 +242,159 @@ private void FireLaser()
   
 private IEnumerator FireLaserCoroutine(float angle)
 {
-   // Play fire sound
-   if (audioSource != null && firingSound != null)
-   {
-       audioSource.Stop(); // Stop charge sound if playing
-       // Set volume for fire sound
-         audioSource.volume = 0.2f;
-       audioSource.PlayOneShot(firingSound);
-   }
-
-
-   // Enable line renderer
-   lineRenderer.enabled = true;
-   lineRenderer.startWidth = 0.3f;
-   lineRenderer.endWidth = 0.2f;
-  
-   // Calculate direction and positions
-   Vector3 direction = Quaternion.Euler(0, 0, angle) * Vector3.right;
-   Vector3 startPos = laserOrigin.position;
-   Vector3 fullEndPos = startPos + (direction * maxLaserDistance);
-  
-   // Extension animation
-   float extendTime = 0.1f; // Time to extend fully
-   float timer = 0f;
-  
-   while (timer < extendTime)
-   {
-       // Update start position in case crab is moving
-       startPos = laserOrigin.position;
-      
-       // Calculate current extension percentage
-       float t = timer / extendTime;
-      
-       // Set current end position based on percentage
-       Vector3 currentEndPos = Vector3.Lerp(startPos, startPos + (direction * maxLaserDistance), t);
-      
-       // Update line renderer
-       lineRenderer.SetPosition(0, startPos);
-       lineRenderer.SetPosition(1, currentEndPos);
-      
-       timer += Time.deltaTime;
-       yield return null;
-   }
-  
-   // Hold the laser at full length, but keep updating start position
-   float duration = 0f;
-   while (duration < laserDuration)
-   {
-       // Update start position
-       startPos = laserOrigin.position;
-      
-       // Check for all hits along the ray
-      // Check for all hits along the ray
-RaycastHit2D[] hits = Physics2D.RaycastAll(startPos, direction, maxLaserDistance);
-RaycastHit2D hit = Physics2D.Raycast(startPos, direction, maxLaserDistance);
-Vector3 currentEndPos = hit.collider != null ? hit.point : startPos + (direction * maxLaserDistance);
-bool hitSomething = false;
-
-// Calculate current knockback force based on charge time
-float knockbackForce = Mathf.Lerp(baseKnockbackForce, maxKnockbackForce, currentChargeTime / maxChargeTime);
-
-// Process all hits
-foreach (RaycastHit2D rayHit in hits)
-{
-    // Skip player hits
-    if (rayHit.collider.gameObject.CompareTag("Player"))
-    {
-        continue;
-    }
-
-    // Found a non-player hit
-    hitSomething = true;
-    currentEndPos = rayHit.point;
-
-    // Calculate damage based on charge
-    float damage = Mathf.Lerp(baseLaserDamage, maxLaserDamage, currentChargeTime / maxChargeTime);
-
-    // Try interface first
-    IDamageable damageable = rayHit.collider.GetComponent<IDamageable>();
-    if (damageable != null)   
-    {
-        damageable.TakeDamage((int)damage);
-        
-        // Apply knockback if possible
-        ApplyKnockback(rayHit.collider.gameObject, direction, knockbackForce);
-        break; // Stop after first hit
-    }
-
-    // Then try calling TakeDamage directly for LeapingEnemy
-    var enemyScript = rayHit.collider.GetComponent<EnemyLeap>();
-    if (enemyScript != null)
-    {
-        enemyScript.TakeDamage((int)damage);
-        
-        // Apply knockback
-        ApplyKnockback(rayHit.collider.gameObject, direction, knockbackForce);
-        break; // Stop after first hit
-    }
-
-    // Then for SnailEnemy
-    var snailScript = rayHit.collider.GetComponent<SnailEnemy>();
-    if (snailScript != null)
-    {
-        snailScript.TakeDamage((int)damage);
-        
-        // Apply knockback
-        ApplyKnockback(rayHit.collider.gameObject, direction, knockbackForce);
-        break; // Stop after first hit
-    }
-
-    // For AcidSnail
-        var acidSnailScript = rayHit.collider.GetComponent<AcidSnail>();
-    if (acidSnailScript != null)
-    {
-
-    acidSnailScript.TakeDamage((int)damage);
-    Debug.Log("Laser hit AcidSnail, applying damage: " + (int)damage);
-    // Debug.Log(" - Health: " + acidSnailScript.currentHealth);
+    HashSet<GameObject> hitObjects = new HashSet<GameObject>();
     
-        // Apply knockback
-        ApplyKnockback(rayHit.collider.gameObject, direction, knockbackForce);
-        break; // Stop after first hit
+    // Play fire sound
+    if (audioSource != null && firingSound != null)
+    {
+        audioSource.Stop();
+        audioSource.volume = 0.2f;
+        audioSource.PlayOneShot(firingSound);
     }
+
+    // Setup LineRenderer safely
+    if (lineRenderer == null)
+    {
+        lineRenderer = GetComponent<LineRenderer>() ?? gameObject.AddComponent<LineRenderer>();
+    }
+    
+    // Configure LineRenderer
+    lineRenderer.positionCount = 2;
+    lineRenderer.startWidth = 0.3f;
+    lineRenderer.endWidth = 0.2f;
+    lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+    lineRenderer.material.color = Color.red;
+    lineRenderer.sortingOrder = 100;
+    lineRenderer.enabled = true;
+    
+    // Calculate direction
+    Vector3 direction = Quaternion.Euler(0, 0, angle) * Vector3.right;
+    
+    // Hold the laser at full length
+    float duration = 0f;
+    while (duration < laserDuration)
+    {
+        // Always update start position in case player moves
+        Vector3 startPos = laserOrigin.position;
+        
+        // Get all hits
+        RaycastHit2D[] allHits = Physics2D.RaycastAll(startPos, direction, maxLaserDistance)
+            .Where(hit => !hit.collider.gameObject.CompareTag("Player"))
+            .OrderBy(hit => hit.distance)
+            .ToArray();
+        
+        // Default end position (full distance)
+        Vector3 endPos = startPos + (direction * maxLaserDistance);
+        
+        // Process hits
+        bool hitProcessed = false;
+        foreach (RaycastHit2D hit in allHits)
+        {
+            // Ensure the object still exists
+            if (hit.collider == null || hit.collider.gameObject == null)
+                continue;
+
+            // Set endpoint to the hit point
+            endPos = hit.point;
+            
+            // Only process if not already hit
+            if (!hitObjects.Contains(hit.collider.gameObject))
+            {
+                float damage = Mathf.Lerp(baseLaserDamage, maxLaserDamage, currentChargeTime / maxChargeTime);
+                float knockbackForce = Mathf.Lerp(baseKnockbackForce, maxKnockbackForce, currentChargeTime / maxChargeTime);
+                
+                // Comprehensive enemy type checks
+                var acidSnail = hit.collider.GetComponent<AcidSnail>();
+                if (acidSnail != null)
+                {
+                    acidSnail.TakeDamage((int)damage);
+                    hitObjects.Add(hit.collider.gameObject);
+                    ApplyKnockback(hit.collider.gameObject, direction, knockbackForce);
+                    hitProcessed = true;
+                }
+                
+                var enemyLeapScript = hit.collider.GetComponent<EnemyLeap>();
+                if (enemyLeapScript != null)
+                {
+                    enemyLeapScript.TakeDamage((int)damage);
+                    hitObjects.Add(hit.collider.gameObject);
+                    ApplyKnockback(hit.collider.gameObject, direction, knockbackForce);
+                    hitProcessed = true;
+                }
+                
+                var snailScript = hit.collider.GetComponent<SnailEnemy>();
+                if (snailScript != null)
+                {
+                    snailScript.TakeDamage((int)damage);
+                    hitObjects.Add(hit.collider.gameObject);
+                    ApplyKnockback(hit.collider.gameObject, direction, knockbackForce);
+                    hitProcessed = true;
+                }
+
+                // If we processed a hit, continue to the next iteration
+                if (hitProcessed)
+                    break;
+            }
+        }
+        
+        // Always update line renderer with current start and end positions
+        lineRenderer.SetPosition(0, startPos);
+        lineRenderer.SetPosition(1, endPos);
+        
+        duration += Time.deltaTime;
+        yield return null;
+    }
+  
+    // Ensure the line renderer is disabled at the end
+    lineRenderer.enabled = false;
+    
+    // Wait for cooldown
+    yield return new WaitForSeconds(cooldownTime);
+    
+    // Allow firing again
+    canFire = true;
 }
-      
-       // Update line renderer
-     lineRenderer.SetPosition(0, startPos);
-    lineRenderer.SetPosition(1, currentEndPos);
-      
-       duration += Time.deltaTime;
-       yield return null;
-   }
-  
-   // Disable laser
-   lineRenderer.enabled = false;
-  
-   // Cooldown period
-   yield return new WaitForSeconds(cooldownTime);
-  
-   canFire = true;
-}
+
+// Helper method to list components (already in your original script)
 
    // New method to apply knockback to enemies
    private void ApplyKnockback(GameObject target, Vector3 direction, float force)
-   {
-       // Try to get rigidbody first
-       Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
-       if (rb != null)
-       {
-           // Apply impulse force in the laser direction
-           rb.linearVelocity = Vector2.zero; // Reset velocity first for consistent knockback
-           rb.AddForce(direction.normalized * force, ForceMode2D.Impulse);
+{
+         // Try to get rigidbody first
+    Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
+    if (rb != null)
+    {
+        // For AcidSnail, use a completely different approach
+        AcidSnail snail = target.GetComponent<AcidSnail>();
+        if (snail != null)
+        {
+            // Temporarily disable snail's own movement control
+            snail.shouldMove = false;
+            snail.isMovingAway = false;
+            
+            // Apply strong direct force regardless of facing
+            rb.linearVelocity = Vector2.zero; // Clear any existing velocity
+            rb.AddForce(direction.normalized * force * 2f, ForceMode2D.Impulse);
+            
+            // Debug.Log("Applied direct knockback to AcidSnail: " + (direction.normalized * force * 2f));
+        }
+        else
+        {
+            // Regular knockback for other enemies
+            rb.linearVelocity = Vector2.zero;
+            rb.AddForce(direction.normalized * force, ForceMode2D.Impulse);
+        }
 
-           // Play knockback sound
-              if (audioSource != null && knockbackSound != null)
-              {
-                audioSource.PlayOneShot(knockbackSound, 0.15f);
-              }
-           
-           // Optionally start a coroutine to reset velocity after knockback duration
-           StartCoroutine(ResetVelocityAfterKnockback(rb));
-           return;
-       }
+        // Play knockback sound
+        if (audioSource != null && knockbackSound != null)
+        {
+            audioSource.PlayOneShot(knockbackSound, 0.8f);
+        }
+        
+        // Reset velocity and re-enable snail movement after knockback
+        StartCoroutine(ResetVelocityAfterKnockback(rb));
+        return;
+    }
        
        // If no rigidbody, check if target has a custom knockback method
        IKnockbackable knockbackable = target.GetComponent<IKnockbackable>();
@@ -481,4 +475,19 @@ private string ListComponents(GameObject obj)
    }
    return result;
 }
+
+private void DebugRaycast(Vector3 start, Vector3 direction, float distance)
+{
+    RaycastHit2D[] hits = Physics2D.RaycastAll(start, direction, distance);
+    // Debug.Log($"Raycast from {start} in direction {direction} hit {hits.Length} objects");
+    
+    foreach (RaycastHit2D hit in hits)
+    {
+        // Debug.Log($"Hit: {hit.collider.gameObject.name} at distance {hit.distance}");
+    }
+    
+    // Visual debug
+    // Debug.DrawRay(start, direction * distance, Color.red, 2f);
+}
+
 }

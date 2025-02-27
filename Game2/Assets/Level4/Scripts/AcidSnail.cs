@@ -21,19 +21,55 @@ public class AcidSnail : MonoBehaviour, IDamageable
     public float timeBetweenShots = 0.5f;
     public AudioClip shootSound;
 
+    [Header("Platform Boundaries")]
+    public Transform platformTransform; // Drag the platform transform in the inspector
+    private float leftBoundary;
+    private float rightBoundary;
+    private bool hasLoggedNearBoundary = false;
+    private float lastYPosition = 0f;
+
     // State tracking
     public bool shouldMove = false;
-    private bool isMovingAway = false;
+    [HideInInspector]
+    public bool isMovingAway = false;
     private bool isShooting = false;
     private int shotsRemaining = 0;
     private GameObject player;
     private Rigidbody2D rb;
     private Animator animator;
+    EnemySpawner enemySpawner;
     private AudioSource audioSource;
-    private Vector3 targetMoveAwayPosition;
+    public Vector3 targetMoveAwayPosition;
+    private Camera mainCamera;
+    public float offscreenMargin = -2f; // How far below screen to check
+    private bool isFallingDestroyed = false; // Flag to prevent multiple calls
+
+    public AcidSnailSpawner spawner;
+
+
+    // Sounds
+    public AudioClip deathSound;
+    public AudioClip snailFall;
     
     void Start()
     {
+        enemySpawner = FindFirstObjectByType<EnemySpawner>();
+        spawner = FindFirstObjectByType<AcidSnailSpawner>();
+        mainCamera = Camera.main;
+
+         // Calculate platform boundaries based on the platform's collider
+        if (platformTransform != null)
+        {
+            Collider2D platformCollider = platformTransform.GetComponent<Collider2D>();
+            if (platformCollider != null)
+            {
+                leftBoundary = platformCollider.bounds.min.x;
+                rightBoundary = platformCollider.bounds.max.x;
+            }
+        }
+       
+       GetComponent<Collider2D>().enabled = true;
+       
         currentHealth = maxHealth;
         player = GameObject.FindGameObjectWithTag("Player");
         rb = GetComponent<Rigidbody2D>();
@@ -51,20 +87,54 @@ public class AcidSnail : MonoBehaviour, IDamageable
         }
     }
 
-    void FixedUpdate()
+
+// void Update()
+// {
+//     // Skip check if already being destroyed
+//     if (isFallingDestroyed) return;
+    
+//     // Store position for debugging
+//     lastYPosition = transform.position.y;
+    
+//     // Check if the object has fallen below the bottom of the screen
+//     if (mainCamera != null && rb.linearVelocity.y < 0)
+//     {
+//         Vector3 viewportPosition = mainCamera.WorldToViewportPoint(transform.position);
+        
+//         // Debug logging
+//         if (viewportPosition.y < 0.1f && !hasLoggedNearBoundary)
+//         {
+//             // Debug.Log($"Snail approaching boundary: ViewportY={viewportPosition.y}, WorldY={transform.position.y}, Velocity={rb.linearVelocity.y}");
+//             hasLoggedNearBoundary = true;
+//         }
+        
+//         // Check if below screen with reduced margin
+//         // Try a much smaller margin first to see if detection improves
+//         if (viewportPosition.y < 0)  // Changed from -offscreenMargin to just 0
+//         {
+//             // Debug.Log($"Snail detected as fallen: ViewportY={viewportPosition.y}, WorldY={transform.position.y}, Velocity={rb.linearVelocity.y}");
+//             isFallingDestroyed = true; // Set flag to prevent repeated calls
+            
+//             if (audioSource != null && snailFall != null)
+//             {
+//                 audioSource.PlayOneShot(snailFall, 0.4f);
+//             }
+            
+//             // Debug.Log("Acid snail destroyed for falling out of bounds");
+//             Invoke("EnemyDied", 1);
+//         }
+//     }
+// }
+
+  void FixedUpdate()
 {
     if (player == null)
     {
         player = GameObject.FindGameObjectWithTag("Player");
-        if (player == null) return; // Still no player found
+        if (player == null) return;
     }
     
-    if (!shouldMove || isShooting) return;  // Don't move if not triggered or currently shooting
-    
-    // Calculate distance to player
-    float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
-    
-    // If we're moving away after shooting
+    // Allow movement during moving away state
     if (isMovingAway)
     {
         // Move toward the target position - X direction only
@@ -81,10 +151,38 @@ public class AcidSnail : MonoBehaviour, IDamageable
         return;
     }
     
-    // If we're close enough to shoot
+    if (!shouldMove || isShooting) return;
+    
+    // Calculate distance to player
+    float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+    
+    // Platform boundary proximity check
+    if (platformTransform != null)
+    {
+        // Check if within 1 units of either boundary
+        bool nearLeftBoundary = transform.position.x <= leftBoundary + 1f;
+        bool nearRightBoundary = transform.position.x >= rightBoundary - 1f;
+        
+        if (nearLeftBoundary || nearRightBoundary)
+        {
+            // Debug.Log("Near boundary, stopping movement.");
+            // Stop moving
+            rb.linearVelocity = Vector2.zero;
+            moveSpeed = 0;
+        
+            // Face the player explicitly when stationary
+            FacePlayer();
+            
+            // Always start shooting sequence when at boundary
+            StartCoroutine(ShootWhileStationary());
+            return;
+        }
+    }
+    
+    // If close enough to shoot
     if (distanceToPlayer <= attackFromDistance && !isShooting && shotsRemaining <= 0)
     {
-        rb.linearVelocity = Vector2.zero;  // Stop moving
+        rb.linearVelocity = Vector2.zero;
         StartCoroutine(ShootSequence());
         return;
     }
@@ -93,6 +191,9 @@ public class AcidSnail : MonoBehaviour, IDamageable
     Vector2 direction = (player.transform.position - transform.position).normalized;
     rb.linearVelocity = new Vector2(direction.x * moveSpeed, 0);
     UpdateFacing();
+
+    // If snail goes outside of camera viewport while falling, destroy it
+
 }
     
     IEnumerator ShootSequence()
@@ -140,11 +241,28 @@ public class AcidSnail : MonoBehaviour, IDamageable
         // Play sound effect
         if (audioSource != null && shootSound != null)
         {
-            audioSource.PlayOneShot(shootSound);
+            audioSource.PlayOneShot(shootSound, 0.15f);
         }
         
-        Debug.Log("Acid snail shot acid gob at player");
     }
+
+IEnumerator ShootWhileStationary()
+{
+    // Debug.Log("Shooting while stationary");
+    isShooting = true;
+    shotsRemaining = shootHowMany;
+    
+    // Shoot the specified number of projectiles
+    while (shotsRemaining > 0)
+    {
+        ShootAcidGob();
+        shotsRemaining--;
+        yield return new WaitForSeconds(1);
+    }
+    
+    isShooting = false;
+}
+
     
 private void UpdateFacing()
 {
@@ -163,19 +281,29 @@ private void UpdateFacing()
     }
 }
 
-    // Called when the player enters the detection range
-    void OnTriggerEnter2D(Collider2D other)
+private void FacePlayer()
+// Called when snail is stationary
+{
+    // Determine facing direction based on player's position relative to snail
+    if (player != null)
     {
-        if (other.CompareTag("Player"))
+        Vector3 directionToPlayer = player.transform.position - transform.position;
+        
+        // Use sign of x to determine facing
+        if (directionToPlayer.x > 0.1f)
         {
-            // Debug.Log("Player detected by acid snail");
-            shouldMove = true;
-            // if (audioSource != null)
-            // {
-            //     audioSource.Play();
-            // }
+            // Player is to the right
+            transform.rotation = Quaternion.identity; // Reset rotation
+            GetComponent<SpriteRenderer>().flipX = false;
+        }
+        else if (directionToPlayer.x < -0.1f)
+        {
+            // Player is to the left
+            transform.rotation = Quaternion.identity; // Reset rotation
+            GetComponent<SpriteRenderer>().flipX = true;
         }
     }
+}
     
     // Handle collisions with the player
     private void OnCollisionEnter2D(Collision2D collision)
@@ -188,13 +316,17 @@ private void UpdateFacing()
                 player.PlayerHitByEnemy();
             }
         }
+        else if (collision.gameObject.CompareTag("Wall") || collision.gameObject.layer == LayerMask.NameToLayer("Wall"))
+    {
+        HandleWallCollision(collision);
+    }
     }
     
     // IDamageable implementation
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        Debug.Log(name + " took " + damage + " damage. Health left: " + currentHealth);
+        // Debug.Log(name + " took " + damage + " damage. Health left: " + currentHealth);
 
         if (currentHealth <= 0)
         {
@@ -202,8 +334,23 @@ private void UpdateFacing()
         }
     }
     
+ void OnBecameInvisible()
+{
+    if (rb.linearVelocity.y < 0) // Only destroy if it's falling
+    {
+       audioSource.PlayOneShot(snailFall, 0.4f);
+       Invoke("EnemyDied", 1);
+    }
+}
+
     public void EnemyDied()
     {
+        // Tell EnemySpawner enemy died
+        if (enemySpawner != null)
+        {
+            enemySpawner.EnemyDied();
+        }
+        
         // Turn off sprite renderer
         SpriteRenderer renderer = GetComponent<SpriteRenderer>();
         if (renderer != null)
@@ -228,14 +375,12 @@ private void UpdateFacing()
         if (audioSource != null)
         {
             audioSource.Stop();
-            AudioClip deathSound = audioSource.clip; // Use the main audio clip as death sound
             if (deathSound != null)
             {
                 audioSource.PlayOneShot(deathSound, 0.5f);
             }
         }
 
-        Debug.Log("Acid snail died");
         
         // Destroy after delay
         StartCoroutine(DestroyAfterDelay());
@@ -243,7 +388,46 @@ private void UpdateFacing()
     
     private IEnumerator DestroyAfterDelay()
     {
-        yield return new WaitForSeconds(3f);
+        yield return new WaitForSeconds(1f);
         Destroy(gameObject);
     }
+
+
+ private void HandleWallCollision(Collision2D collision)
+{
+    // Get the collision normal
+    Vector2 normal = collision.contacts[0].normal;
+    
+    
+    // The normal already points in the direction to move away
+    // normal.x = 1 means "move right"
+    // normal.x = -1 means "move left"
+    
+    // Stop current movement
+    rb.linearVelocity = Vector2.zero;
+    
+    // Cancel any shooting sequence
+    StopAllCoroutines();
+    isShooting = false;
+    isMovingAway = true;
+    
+    // Set target position in the direction of the normal (away from wall)
+    targetMoveAwayPosition = new Vector3(
+        transform.position.x + (normal.x * moveAwayDistance),
+        transform.position.y,
+        transform.position.z
+    );
+    
+    // Update sprite facing
+    GetComponent<SpriteRenderer>().flipX = (normal.x < 0);
+    
+    // Reset behavior after delay
+    Invoke("ResetBehavior", 0.5f);
+}
+
+private void ResetBehavior()
+{
+    shouldMove = true;
+    isMovingAway = false;
+}
 }
