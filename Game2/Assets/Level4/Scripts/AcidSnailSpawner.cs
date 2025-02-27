@@ -19,7 +19,7 @@ public class AcidSnailSpawner : MonoBehaviour
     private int currentEnemies = 0; // Tracks active enemies
     private bool playerInZone = false; // Tracks if player is in trigger area
     private bool isSpawning = false; // Tracks if spawning is in progress
-    public float spawnDelay = 5f; // Adjustable time between spawns
+    public float spawnDelay = 5f; // Hard code time between spawns
     public bool hasTriggered = false; // Tracks if the spawner has been triggered
     private bool spawnFromLeft = true; // Track which side to spawn from
 
@@ -84,7 +84,13 @@ public class AcidSnailSpawner : MonoBehaviour
     {
         isSpawning = true; // Lock coroutine
 
-        while (currentEnemies < maxEnemies && totalSpawned < totalSpawnable)
+         while (currentEnemies == 0 && totalSpawned < totalSpawnable)
+        {
+            yield return new WaitForSeconds(1); // Wait before spawning!
+            SpawnEnemy();
+        }
+
+        while (currentEnemies >=1 && currentEnemies < maxEnemies && totalSpawned < totalSpawnable)
         {
             yield return new WaitForSeconds(spawnDelay); // Wait before spawning!
             SpawnEnemy();
@@ -166,19 +172,19 @@ public class AcidSnailSpawner : MonoBehaviour
             acidSnail.currentHealth = snailMaxHealth;
 
             // Apply movement settings
-            acidSnail.moveSpeed = snailMoveSpeed;
-            acidSnail.attackFromDistance = snailAttackDistance;
-            acidSnail.moveAwayDistance = snailMoveAwayDistance;
+            acidSnail.moveSpeed = snailMoveSpeed * Random.Range(0.8f, 1.2f);
+            acidSnail.attackFromDistance = snailAttackDistance * Random.Range(0.8f, 1.2f);
+            acidSnail.moveAwayDistance = snailMoveAwayDistance * Random.Range(0.8f, 1.2f);
 
             // Apply shooting settings
             if (acidGobPrefab != null)
             {
                 acidSnail.acidGobPrefab = acidGobPrefab;
             }
-            acidSnail.gobSpeed = snailGobSpeed;
+            acidSnail.gobSpeed = snailGobSpeed * Random.Range(0.8f, 1.2f);
             acidSnail.gobDamage = snailGobDamage;
-            acidSnail.shootHowMany = snailShootHowMany;
-            acidSnail.timeBetweenShots = snailTimeBetweenShots;
+            acidSnail.shootHowMany = snailShootHowMany + Random.Range(-1, 2);
+            acidSnail.timeBetweenShots = snailTimeBetweenShots * Random.Range(0.6f, 1.6f);
             
             // Apply audio settings
             if (snailShootSound != null)

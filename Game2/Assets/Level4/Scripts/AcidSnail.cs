@@ -331,6 +331,7 @@ private void FacePlayer()
         if (currentHealth <= 0)
         {
             EnemyDied();
+            Debug.Log(name + " died.");
         }
     }
     
@@ -345,10 +346,12 @@ private void FacePlayer()
 
     public void EnemyDied()
     {
+        StopAllCoroutines();
+        
         // Tell EnemySpawner enemy died
-        if (enemySpawner != null)
+        if (spawner != null)
         {
-            enemySpawner.EnemyDied();
+            spawner.EnemyDied();
         }
         
         // Turn off sprite renderer

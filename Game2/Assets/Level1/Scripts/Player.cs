@@ -41,10 +41,16 @@ public class Player : MonoBehaviour, IDamageable
     [HideInInspector]
     public int currentHealth;
     public int maxShieldHealth;
-    private int currentShieldHealth;
+    [HideInInspector]
+    public int currentShieldHealth;
     private bool isJumping;
     [HideInInspector]
+   
+   // Shield variables and methods
     public bool shieldActive = true;
+    private bool isRegenerating = false;
+    public float shieldRegenerationRate = 0.25f; // Regenerate 1 shield point per second (adjustable)
+    private Coroutine shieldRegenerationCoroutine = null; // Reference to store the active coroutine
    
 
    //Fixed state variables
@@ -427,35 +433,95 @@ public void PlayAttackSound()
     GetComponent<SpriteRenderer>().enabled = false;
 }
 
-    public void HitShield()
-    {
-        // Play shield bounce sound
-       
-        audioSource.PlayOneShot(shieldBounce, 0.5f);
-        -- currentShieldHealth;
-        Debug.Log("Shield hit. Current shield health: " + currentShieldHealth);
-        if (currentShieldHealth <= 0)
-        {
-            // Play shield break sound
-            Debug.Log("Shield broken");
-            crabSprite.color = Color.red; // Change to red
+/// *** Shield behavior *** ///
 
-            audioSource.PlayOneShot(shieldBreak, 0.9f);
-            //Wait five seconds then restore shield
-            shieldActive = false;
-            StartCoroutine(RestoreShield());
-        }
+   public void HitShield()
+{
+    // Play shield bounce sound
+    audioSource.PlayOneShot(shieldBounce, 0.5f);
+    --currentShieldHealth;
+    Debug.Log("Shield hit. Current shield health: " + currentShieldHealth);
+    
+    // Start regeneration if not already regenerating
+    if (!isRegenerating && currentShieldHealth > 0)
+    {
+        StartShieldRegeneration();
     }
+    
+    if (currentShieldHealth <= 0)
+    {
+        // Play shield break sound
+        Debug.Log("Shield broken");
+        crabSprite.color = Color.red; // Change to red
+        
+        // Stop any current regeneration
+        StopShieldRegeneration();
+        
+        audioSource.PlayOneShot(shieldBreak, 0.9f);
+        //Shield is broken, disable it and start recovery
+        shieldActive = false;
+        StartCoroutine(RestoreShield());
+    }
+}
+
+private void StartShieldRegeneration()
+{
+    // Stop any existing regeneration before starting a new one
+    StopShieldRegeneration();
+    
+    // Start the regeneration coroutine and store the reference
+    shieldRegenerationCoroutine = StartCoroutine(RegenerateShield());
+}
+
+private void StopShieldRegeneration()
+{
+    if (shieldRegenerationCoroutine != null)
+    {
+        StopCoroutine(shieldRegenerationCoroutine);
+        shieldRegenerationCoroutine = null;
+    }
+    isRegenerating = false;
+}
+
+private IEnumerator RegenerateShield()
+{
+    isRegenerating = true;
+    
+    while (currentShieldHealth < maxShieldHealth && shieldActive)
+    {
+        // Wait for regeneration interval
+        yield return new WaitForSeconds(1f / shieldRegenerationRate);
+        
+        // Increase shield health by 1
+        currentShieldHealth++;
+        Debug.Log("Shield regenerated. Current shield health: " + currentShieldHealth);
+        
+        // Optional: Add a small visual or sound effect for regeneration
+        // You could add a subtle pulse effect or quiet sound here
+    }
+    
+    isRegenerating = false;
+    shieldRegenerationCoroutine = null;
+}
 
     private IEnumerator RestoreShield()
-    {
-        yield return new WaitForSeconds(5f);
-        currentShieldHealth = maxShieldHealth;
-        shieldActive = true;
-        crabSprite.color = originalColor; // Restore original color
-        audioSource.PlayOneShot(shieldRestore, 0.9f);
-        Debug.Log("Shield restored");
-    }
+{
+    yield return new WaitForSeconds(5f);
+    
+    // Restore shield to max health
+    currentShieldHealth = maxShieldHealth; 
+    shieldActive = true;
+    crabSprite.color = originalColor; // Restore original color
+    audioSource.PlayOneShot(shieldRestore, 0.9f);
+    Debug.Log("Shield restored with 1 health point");
+    
+}
+
+// 7. Add cleanup in OnDisable to prevent coroutine errors
+private void OnDisable()
+{
+    StopShieldRegeneration();
+}
 
 
 }

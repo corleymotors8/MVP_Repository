@@ -73,7 +73,7 @@ public class AcidGob : MonoBehaviour
     // Force the initial flying animation state
     if (animator != null)
     {
-        animator.Play("AcidFlying", 0);
+        animator.Play("AcidFlying");
     }
 }
     
@@ -184,7 +184,7 @@ void OnTriggerEnter2D(Collider2D other)
     // Play splash sound if available
     if (audioSource != null && splashSound != null)
     {
-        audioSource.PlayOneShot(splashSound, 0.07f);
+        audioSource.PlayOneShot(splashSound, 0.03f);
     }
     
     // APPROACH 1: Try direct animator state control
