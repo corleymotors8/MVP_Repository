@@ -1,16 +1,24 @@
 using UnityEngine;
+using System.Collections;
 
 public class BallController : MonoBehaviour
 {
     // References
     private GameObject player;
+    BallSpawner ballSpawner;
     private Rigidbody2D rb;
     private Collider2D ballCollider;
     private bool isGrabbed = false;
     
-    // Settings
+   [Header("Pick-up behavior")]
     public float detectionRadius = 3f;
     public float heightOffset = 2f;
+
+    [Header("Audio Settings")]
+    public AudioClip destroySound;
+
+    private AudioSource audioSource;
+    private bool isBeingDestroyed = false;
     
     // Store original physics materials
     private PhysicsMaterial2D originalMaterial;
@@ -20,6 +28,7 @@ public class BallController : MonoBehaviour
         // Get components
         rb = GetComponent<Rigidbody2D>();
         ballCollider = GetComponent<Collider2D>();
+        audioSource = GetComponent<AudioSource>();
         
         // Store original physics material
         if (ballCollider != null)
@@ -29,6 +38,9 @@ public class BallController : MonoBehaviour
         
         // Find the player
         player = GameObject.FindGameObjectWithTag("Player");
+
+        // Find the ball spawner
+        ballSpawner = GameObject.FindFirstObjectByType<BallSpawner>();
     }
 
     private float lastReleaseTime = 0f;
@@ -85,49 +97,19 @@ public class BallController : MonoBehaviour
     // Optional: Method to release the ball if you need it later
     public void ReleaseBall()
     {
-        Debug.Log("ReleaseBall method called");
         isGrabbed = false;
         lastReleaseTime = Time.time; // Set the release time for cooldown
         
         // Re-enable physics
         rb.bodyType = RigidbodyType2D.Dynamic;
-        Debug.Log("Set RigidBody to Dynamic");
         
         // Restore original physics material
         if (ballCollider != null)
         {
             ballCollider.sharedMaterial = originalMaterial;
             ballCollider.isTrigger = false;
-            Debug.Log("Collider trigger disabled, restored material");
         }
     }
-    
-    // Throw the ball in the direction the player is facing
-    // private void ThrowBall()
-    // {
-    //     ReleaseBall();
-        
-        
-    //     // Determine throw direction (assuming player might have a script that tracks facing)
-    //     Vector2 throwDirection = Vector2.right; // Default right
-        
-    //     // If player has a component indicating direction, use that instead
-    //     if (player.GetComponent<Player>() != null && player.GetComponent<Player>().isFacingRight == false)
-    //     {
-    //         throwDirection = Vector2.left;
-    //     }
-    //     else
-    //     {
-    //     }
-        
-    //     // Apply force at 45-degree angle
-    //     Vector2 throwForce = new Vector2(throwDirection.x, 1f).normalized * 10f;
-    //     Debug.Log("Applying force: " + throwForce);
-    //     rb.AddForce(throwForce, ForceMode2D.Impulse);
-        
-    //     // Check velocity after force is applied
-    //     Debug.Log("Ball velocity after throw: " + rb.linearVelocity);
-    // }
 
     public void ThrowWithForce(Vector2 force)
 {
@@ -141,4 +123,48 @@ public class BallController : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRadius);
     }
+
+    public void DestroyBall()
+    {
+        Debug.Log("Destroying ball");
+        // Only start the destroy sequence if it hasn't already started
+        if (!isBeingDestroyed)
+        {
+            StartCoroutine(DestroySequence());
+        }
+    }
+
+        private IEnumerator DestroySequence()
+    {
+        isBeingDestroyed = true;
+
+        // Wait 0.6 seconds
+        yield return new WaitForSeconds(0.6f);
+
+        // Play destroy sound
+        if (destroySound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(destroySound, 0.4f);
+        }
+
+         // Notify ball spawner that the ball is destroyed
+        if (ballSpawner != null)
+        {
+            ballSpawner.BallDestroyed();
+        }
+
+         isBeingDestroyed = false;
+
+         //Hide ball sprite
+        GetComponent<SpriteRenderer>().enabled = false;
+
+       Invoke("DestroyBallObject", 0.6f);
+    }
+
+    private void DestroyBallObject()
+    {
+        Destroy(gameObject);
+    }
+
+   
 }

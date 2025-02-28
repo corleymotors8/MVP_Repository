@@ -118,7 +118,6 @@ public class JetpackController : MonoBehaviour
     // Only start the falling sequence if we weren't already falling
     if (!isFalling)
     {
-        Debug.Log("Player falling");
         isFalling = true;
         player.isFallingJetPack = true;
         animator.SetBool("isLaunched", false);

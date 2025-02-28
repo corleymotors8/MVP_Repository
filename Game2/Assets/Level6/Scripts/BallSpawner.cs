@@ -1,0 +1,60 @@
+using UnityEngine;
+using System.Collections;
+
+public class BallSpawner : MonoBehaviour
+{
+    [Header("Spawning Settings")]
+    public GameObject ballPrefab;
+    public Transform spawnPoint;
+    public float spawnDelay = 2f;
+    public int maxBalls = 1;
+
+    [Header("Stats")]
+    public int currentBallCount = 1;
+
+    private bool isSpawningActive = true;
+    private Coroutine spawnCoroutine;
+
+    // Called by the ball when it's destroyed
+    
+    public void BallDestroyed()
+    {
+        currentBallCount--;
+        Debug.Log("Ball destroyed. Current count: " + currentBallCount);
+        
+        // Only start spawning if we're not already spawning
+        if (isSpawningActive && currentBallCount < maxBalls && spawnCoroutine == null)
+        {
+            spawnCoroutine = StartCoroutine(SpawnRoutine());
+        }
+    }
+
+    private IEnumerator SpawnRoutine()
+    {
+        // Wait for the spawn delay
+        yield return new WaitForSeconds(spawnDelay);
+        
+        // Spawn a new ball
+        SpawnBall();
+        
+        // Clear the coroutine reference
+        spawnCoroutine = null;
+    }
+
+    public void SpawnBall()
+    {
+        // Make sure we have valid references
+        if (ballPrefab == null || spawnPoint == null)
+        {
+            Debug.LogError("Ball Spawner: Missing ballPrefab or spawnPoint reference!");
+            return;
+        }
+
+        // Spawn the ball at the spawn point position and rotation
+        GameObject newBall = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
+        
+        // Increment the counter
+        currentBallCount++;
+        Debug.Log("Ball spawned. Current count: " + currentBallCount);
+    }
+}

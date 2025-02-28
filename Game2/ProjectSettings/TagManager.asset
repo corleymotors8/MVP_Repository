@@ -11,6 +11,7 @@ TagManager:
   - DeathPlatform
   - PlayerAttack
   - Wall
+  - Ball
   layers:
   - Default
   - TransparentFX
@@ -48,14 +49,23 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Back
+    uniqueID: 602605701
+    locked: 0
   - name: Platform
     uniqueID: 2038625109
+    locked: 0
+  - name: Middle
+    uniqueID: 4100817923
     locked: 0
   - name: Ladder
     uniqueID: 2965301971
     locked: 0
   - name: Player
     uniqueID: 1401905811
+    locked: 0
+  - name: Front
+    uniqueID: 3203020937
     locked: 0
   m_RenderingLayers:
   - Default
