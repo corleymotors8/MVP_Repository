@@ -20,6 +20,7 @@ public class Player : MonoBehaviour, IDamageable
     public AudioClip[] footsteps;
     public AudioClip[] climbing;
     public AudioClip[] attackSounds;
+    public AudioClip throwSound;
     public AudioClip moveSound; // Assign your footstep sounds in the Inspector
     public float moveSoundVolume = 1.0f; // Public variable to control volume (default is max: 1.0)
     public float jumpVolume = 1.0f; // Public variable to control volume (default is max: 1.0)
@@ -94,6 +95,11 @@ public class Player : MonoBehaviour, IDamageable
     private Transform platformTransform = null; // Only created when player lands on platform
     private Vector3 previousPlatformPosition;
 
+    //Ball throwing
+    private BallController heldBall;
+    public float throwForce = 10f;
+    public float throwAngle = 45f; // Degrees
+
     // Other
     public Animator animator;
     private Rigidbody2D rb;
@@ -160,6 +166,11 @@ public class Player : MonoBehaviour, IDamageable
         StartCoroutine(Attack());
         
     }
+
+    if (gameManager.playerCanMove && Input.GetKeyDown(KeyCode.H) && heldBall != null)
+{
+    ThrowBall();
+}
        
     // Walking on ground
   // Only read input if player can move
@@ -522,6 +533,29 @@ private void OnDisable()
 {
     StopShieldRegeneration();
 }
+
+// *** THROWING BALLS *** /// 
+public void SetHeldBall(BallController ball) { heldBall = ball; }
+
+public void ThrowBall()
+{
+    if (heldBall != null)
+    {
+        // Calculate throw direction based on player facing
+        Vector2 throwDirection = isFacingRight ? Vector2.right : Vector2.left;
+        
+        // Apply an upward angle
+        Vector2 newThrowForce = new Vector2(throwDirection.x, 1f).normalized * throwForce;
+        
+        // Tell the ball to release itself and apply the force
+        heldBall.ThrowWithForce(newThrowForce);
+        
+        // Clear the reference
+        heldBall = null;
+    }
+}
+
+
 
 
 }

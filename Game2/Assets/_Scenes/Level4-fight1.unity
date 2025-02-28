@@ -3842,12 +3842,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8300000, guid: 3eea5ac1bd1914106a7a27979a80a448, type: 3}
     - target: {fileID: 4275605377807374888, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
+      propertyPath: maxEnemies
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4275605377807374888, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
       propertyPath: spawnDelay
       value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 4275605377807374888, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
       propertyPath: snailGobSpeed
-      value: 8
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4275605377807374888, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
       propertyPath: snailMaxHealth
@@ -3883,7 +3887,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4275605377807374888, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
       propertyPath: snailTimeBetweenShots
-      value: 0.6
+      value: 1.5
       objectReference: {fileID: 0}
     - target: {fileID: 4891628647488148406, guid: b46e26827840b44b68571d4a4af47ade, type: 3}
       propertyPath: m_LocalPosition.x
