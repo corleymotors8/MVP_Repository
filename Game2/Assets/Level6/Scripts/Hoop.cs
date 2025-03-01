@@ -32,21 +32,16 @@ public class HoopController : MonoBehaviour
         }
         
         // Debug log for testing
-        Debug.Log("Score! Total points: " + pointsScored);
+        Debug.Log("Score! Total Player points: " + pointsScored);
     }
 
     public void ScorePointEnemy()
+    {
+    enemyPoints++;
+    Debug.Log("Enemy Scored! Total points: " + enemyPoints);
 
-        {
-            enemyPoints++;
-            Debug.Log("Enemy Scored! Total points: " + enemyPoints);
-
-            // Play sound effect
-            if (scoreSound != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(enemyScoreSound, 0.2f);
-            }
-        }
-
-
+        audioSource.PlayOneShot(enemyScoreSound, 0.3f);
     }
+}
+
+

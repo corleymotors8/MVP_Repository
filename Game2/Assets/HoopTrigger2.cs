@@ -26,6 +26,7 @@ private void OnTriggerEnter2D(Collider2D other)
     }
     else
     {
+       Debug.Log("Enemy Scored!");
         hoopController.ScorePointEnemy();
     }
     

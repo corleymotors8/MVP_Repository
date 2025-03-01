@@ -27,7 +27,6 @@ public class BallSpawner : MonoBehaviour
     public void BallDestroyed()
     {
         currentBallCount--;
-        Debug.Log("Ball destroyed. Current count: " + currentBallCount);
         
         // Only start spawning if we're not already spawning
         if (isSpawningActive && currentBallCount < maxBalls && spawnCoroutine == null)
@@ -55,7 +54,6 @@ public class BallSpawner : MonoBehaviour
         // Make sure we have valid references
         if (ballPrefab == null || spawnPoint == null)
         {
-            Debug.LogError("Ball Spawner: Missing ballPrefab or spawnPoint reference!");
             return;
         }
 
@@ -65,6 +63,7 @@ public class BallSpawner : MonoBehaviour
         
         // Increment the counter
         currentBallCount++;
-        Debug.Log("Ball spawned. Current count: " + currentBallCount);
     }
+
+    
 }

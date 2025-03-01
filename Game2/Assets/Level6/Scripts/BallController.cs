@@ -142,7 +142,7 @@ public class BallController : MonoBehaviour
     }
 
     // Notify the enemy that it's holding the ball
-    EnemyController enemyController = enemyObj.GetComponent<EnemyController>();
+    BallSeekEnemy enemyController = enemyObj.GetComponent<BallSeekEnemy>();
     if (enemyController != null)
     {
         enemyController.SetHeldBall(this);
@@ -246,6 +246,22 @@ public class BallController : MonoBehaviour
     {
         Destroy(gameObject);
     }
+
+    // Add this to your BallController class
+public void SetLongerGrabCooldown(float duration)
+{
+    lastReleaseTime = Time.time;
+    grabCooldown = duration; // Temporarily set a longer cooldown
+    
+    // Start a coroutine to reset the cooldown after duration
+    StartCoroutine(ResetGrabCooldownValue());
+}
+
+private IEnumerator ResetGrabCooldownValue()
+{
+    yield return new WaitForSeconds(grabCooldown);
+    grabCooldown = 0.5f; // Reset to default value
+}
 
    
 }

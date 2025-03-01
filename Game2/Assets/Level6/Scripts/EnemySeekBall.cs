@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-public class EnemyController : MonoBehaviour
+public class BallSeekEnemy : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 3f;
@@ -19,11 +19,17 @@ public class EnemyController : MonoBehaviour
     
     [Header("State Machine")]
     public float shootingDelay = 1f; // Time to wait at shoot position before throwing
+    private bool isStunned = false;
+    private Coroutine stunCoroutine;
     
     // References
     private GameObject ballObject;
     private BallController heldBall;
     private Rigidbody2D rb;
+    [Header("Audio Settings")]
+    AudioSource audioSource;
+    public AudioClip dropBall;
+
     private float originalScaleX;
     private bool recentlyThrown = false;
 
@@ -35,15 +41,25 @@ public class EnemyController : MonoBehaviour
     
     private void Start()
     {
-         originalScaleX = Mathf.Abs(transform.localScale.x);
+        audioSource = GetComponent<AudioSource>();
+        originalScaleX = Mathf.Abs(transform.localScale.x);
         rb = GetComponent<Rigidbody2D>();
         // Start by looking for a ball
         FindBall();
     }
     
     private void Update()
-    {       
-         // Facing direction logic
+    {   
+         // Skip all movement and state updates if stunned
+        if (isStunned)
+        {
+        // Optionally, make the rigidbody stop moving
+        if (rb != null)
+            rb.linearVelocity = Vector2.zero;
+        return;
+        }
+
+    // Facing direction logic
     if (rb.linearVelocity.x < 0)
     {
         // Moving left
@@ -65,26 +81,26 @@ public class EnemyController : MonoBehaviour
   switch (currentState)
 {
     case EnemyState.Idle:
-        Debug.Log("Enemy State: Idle");
+        // Debug.Log("Enemy State: Idle");
         if (ballObject != null)
         {
-            Debug.Log("Enemy transitioning from Idle to SeekingBall");
+            // Debug.Log("Enemy transitioning from Idle to SeekingBall");
             currentState = EnemyState.SeekingBall;
         }
         break;
     
     case EnemyState.SeekingBall:
-        Debug.Log("Enemy State: SeekingBall");
+        // Debug.Log("Enemy State: SeekingBall");
         SeekBall();
         break;
     
     case EnemyState.MovingToShootPosition:
-        Debug.Log("Enemy State: MovingToShootPosition");
+        // Debug.Log("Enemy State: MovingToShootPosition");
         MoveToShootPosition();
         break;
     
     case EnemyState.Shooting:
-        Debug.Log("Enemy State: Shooting");
+        // Debug.Log("Enemy State: Shooting");
         break;
 }
 }
@@ -118,7 +134,7 @@ public class EnemyController : MonoBehaviour
     {
    if (ballObject == null)
     {
-        Debug.Log("No ball found, returning to Idle");
+        // Debug.Log("No ball found, returning to Idle");
         currentState = EnemyState.Idle;
         return;
     }
@@ -226,7 +242,7 @@ public class EnemyController : MonoBehaviour
         // Double check we still have the ball
         if (IsHoldingBall() && heldBall != null && targetHoop != null)
         {
-            Debug.Log("Conditions met for shooting ball");
+            // Debug.Log("Conditions met for shooting ball");
             // Calculate direction to hoop with some randomness for accuracy
             Vector2 directionToHoop = targetHoop.position - transform.position;
 
@@ -263,7 +279,7 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
-            Debug.Log($"Shoot conditions not met. Holding ball: {IsHoldingBall()}, Held Ball: {heldBall}, Target Hoop: {targetHoop}");
+            // Debug.Log($"Shoot conditions not met. Holding ball: {IsHoldingBall()}, Held Ball: {heldBall}, Target Hoop: {targetHoop}");
 
             currentState = EnemyState.Idle;
         }
@@ -271,7 +287,7 @@ public class EnemyController : MonoBehaviour
 
     public void SetHeldBall(BallController ball)
 {
-    Debug.Log("SetHeldBall called. Updating ball and state.");
+    // Debug.Log("SetHeldBall called. Updating ball and state.");
     heldBall = ball;
     ballObject = ball.gameObject;
 
@@ -286,7 +302,7 @@ public class EnemyController : MonoBehaviour
         // Make sure this object has the "Enemy" tag so the ball can detect it
         if (gameObject.tag != "Enemy")
         {
-            Debug.LogWarning("EnemyController: This GameObject should have the 'Enemy' tag for the ball to detect it.");
+            // Debug.LogWarning("EnemyController: This GameObject should have the 'Enemy' tag for the ball to detect it.");
         }
     }
     
@@ -318,6 +334,55 @@ public class EnemyController : MonoBehaviour
     yield return new WaitForSeconds(0.5f); // Adjust cooldown time as needed
     recentlyThrown = false;
 }
+
+public void DropBall()
+{
+    // Only do something if we're actually holding a ball
+    if (IsHoldingBall() && heldBall != null)
+    {
+        Debug.Log("Enemy dropping ball");
+
+        // Play sound
+        audioSource.PlayOneShot(dropBall, 0.2f);
+        
+        // Reset forced holding state
+        forcedHoldingBall = false;
+        
+        // Tell the ball to release itself with a small upward force
+        Vector2 popOutForce = new Vector2(Random.Range(-3f, 3f), 3f);
+        heldBall.ThrowWithForce(popOutForce);
+
+         // Set a longer cooldown before it can be grabbed again
+        heldBall.SetLongerGrabCooldown(2f); // We'll create this method next
+        heldBall.ThrowWithForce(popOutForce);
+        
+        // Reset references
+        heldBall = null;
+        ballObject = null;
+        
+        // Reset state
+        currentState = EnemyState.Idle;
+
+        // Stun the enemy
+        isStunned = true;
+        
+        // Reset state
+        currentState = EnemyState.Idle;
+        
+        // Start stun timer
+        if (stunCoroutine != null)
+            StopCoroutine(stunCoroutine);
+        stunCoroutine = StartCoroutine(ResetStunAfterDelay(2f));
+    }
+}
+
+private IEnumerator ResetStunAfterDelay(float delay)
+{
+    yield return new WaitForSeconds(delay);
+    isStunned = false;
+}
+
+
 
     
 }

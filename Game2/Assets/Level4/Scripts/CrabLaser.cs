@@ -331,6 +331,14 @@ private IEnumerator FireLaserCoroutine(float angle)
                     hitProcessed = true;
                 }
 
+                var ballSeekEnemy = hit.collider.GetComponent<BallSeekEnemy>(); // Apply DropBall to ball enemies
+                if (ballSeekEnemy != null)
+                {
+                    ballSeekEnemy.DropBall();
+                    hitObjects.Add(hit.collider.gameObject);
+                    hitProcessed = true;
+                }
+
                 // If we processed a hit, continue to the next iteration
                 if (hitProcessed)
                     break;

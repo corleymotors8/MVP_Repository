@@ -7,7 +7,8 @@ public class UIManager : MonoBehaviour
     // References to the UI elements
     [SerializeField] private List<GameObject> healthIcons = new List<GameObject>();
     [SerializeField] private List<GameObject> shieldIcons = new List<GameObject>();
-    [SerializeField] private TextMeshProUGUI playerScoreText; // Add this line
+    [SerializeField] private TextMeshProUGUI playerScoreText; 
+    [SerializeField] private TextMeshProUGUI enemyScoreText; 
 
     
     // References to player and game manager
@@ -18,7 +19,8 @@ public class UIManager : MonoBehaviour
     // Track previous values to avoid unnecessary updates
     private int lastHealthValue = -1;
     private int lastShieldValue = -1;
-     private int lastScoreValue = -1; // Add this line
+     private int lastScoreValue = -1; 
+     private int lastEnemyScoreValue = -1; 
     
     void Start()
     {
@@ -64,6 +66,10 @@ public class UIManager : MonoBehaviour
         {
             UpdateScoreDisplay();
         }
+        if (hoopController != null && hoopController.enemyPoints != lastEnemyScoreValue)
+        {
+            UpdateScoreDisplay();
+        }
     }
     
     void UpdateHealthDisplay()
@@ -102,7 +108,9 @@ public class UIManager : MonoBehaviour
         if (hoopController != null && playerScoreText != null)
         {
             lastScoreValue = hoopController.pointsScored;
+            lastEnemyScoreValue = hoopController.enemyPoints; 
             playerScoreText.text = "Player score: " + lastScoreValue;
+            enemyScoreText.text = "Enemy score: " + lastEnemyScoreValue;
         }
     }
 }
