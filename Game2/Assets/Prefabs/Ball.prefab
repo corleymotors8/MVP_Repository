@@ -130,7 +130,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a181c70de895449d49141ea5451cb888, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRadius: 3
+  detectionRadius: 4
   heightOffset: 2
   destroySound: {fileID: 8300000, guid: 35f0decdfa1884d1a82cd827d4d67a80, type: 3}
   pickUpSound: {fileID: 8300000, guid: 18dabb3af2bdd495597927dd9c9ce3b0, type: 3}

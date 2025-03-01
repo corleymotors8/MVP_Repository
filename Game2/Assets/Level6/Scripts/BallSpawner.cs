@@ -50,6 +50,8 @@ public class BallSpawner : MonoBehaviour
 
     public void SpawnBall()
     {
+        
+        
         // Make sure we have valid references
         if (ballPrefab == null || spawnPoint == null)
         {

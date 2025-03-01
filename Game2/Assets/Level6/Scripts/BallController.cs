@@ -54,7 +54,7 @@ public class BallController : MonoBehaviour
     }
 
     private float lastReleaseTime = 0f;
-    private float grabCooldown = 2f; // Wait 10 second before allowing re-grab
+    private float grabCooldown = 0.5f; // Wait 0.5 second before allowing re-grab
     
     void Update()
 {

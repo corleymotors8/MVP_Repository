@@ -446,16 +446,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 1141236828}
     m_Modifications:
     - target: {fileID: 1821054314575036395, guid: 5a1140d8a1f9d4adbaa93b4c5e91451d, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 47.726326
+      objectReference: {fileID: 0}
+    - target: {fileID: 1821054314575036395, guid: 5a1140d8a1f9d4adbaa93b4c5e91451d, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5090363
+      value: 1.7746267
       objectReference: {fileID: 0}
     - target: {fileID: 1821054314575036395, guid: 5a1140d8a1f9d4adbaa93b4c5e91451d, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.5
+      value: -0.3672
       objectReference: {fileID: 0}
     - target: {fileID: 1821054314575036395, guid: 5a1140d8a1f9d4adbaa93b4c5e91451d, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.22
+      value: 8.7865
       objectReference: {fileID: 0}
     - target: {fileID: 1821054314575036395, guid: 5a1140d8a1f9d4adbaa93b4c5e91451d, type: 3}
       propertyPath: m_LocalPosition.z
@@ -868,13 +872,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8908baae160bd494c8763d0837ef68ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 3
+  moveSpeed: 6
   rotationSpeed: 5
   ballDetectionRadius: 7
   shootPosition: {fileID: 531235379}
   targetHoop: {fileID: 1007827980}
-  throwForce: 8
-  accuracyVariance: 1.5
+  throwForce: 25
+  accuracyVariance: 2
+  trajectoryArc: 1
   shootingDelay: 1
 --- !u!1001 &424511720
 PrefabInstance:
@@ -2959,7 +2964,7 @@ Transform:
   m_GameObject: {fileID: 1497133645}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7, y: 3.1, z: 0}
+  m_LocalPosition: {x: -4.7, y: -1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

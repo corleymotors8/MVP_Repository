@@ -15,6 +15,7 @@ public class EnemyController : MonoBehaviour
     public Transform targetHoop;
     public float throwForce = 8f;
     public float accuracyVariance = 1.5f; // Higher = more misses
+    public float trajectoryArc = 0.5f; // Higher = more arc/lift in the throw
     
     [Header("State Machine")]
     public float shootingDelay = 1f; // Time to wait at shoot position before throwing
@@ -228,6 +229,10 @@ public class EnemyController : MonoBehaviour
             Debug.Log("Conditions met for shooting ball");
             // Calculate direction to hoop with some randomness for accuracy
             Vector2 directionToHoop = targetHoop.position - transform.position;
+
+            // Add upward lift to the trajectory
+            float distance = directionToHoop.magnitude;
+            directionToHoop.y += distance * trajectoryArc; // Add lift proportional to distance
             
             // Add random variance to the shot
             directionToHoop += new Vector2(
@@ -310,7 +315,7 @@ public class EnemyController : MonoBehaviour
 
     private IEnumerator ResetThrowCooldown()
 {
-    yield return new WaitForSeconds(1.5f); // Adjust cooldown time as needed
+    yield return new WaitForSeconds(0.5f); // Adjust cooldown time as needed
     recentlyThrown = false;
 }
 
