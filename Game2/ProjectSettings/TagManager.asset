@@ -12,6 +12,7 @@ TagManager:
   - PlayerAttack
   - Wall
   - Ball
+  - HoopBarrier
   layers:
   - Default
   - TransparentFX

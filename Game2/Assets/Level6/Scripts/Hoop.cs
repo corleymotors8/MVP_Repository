@@ -3,13 +3,15 @@ using UnityEngine;
 public class HoopController : MonoBehaviour
 {
     [Header("Settings")]
-    [HideInInspector]
     public AudioClip scoreSound;
+    public AudioClip enemyScoreSound;
     
     [Header("Stats")]
     public int pointsScored = 0;
+    public int enemyPoints = 0;
     
     private AudioSource audioSource;
+   
     
     private void Awake()
     {
@@ -17,29 +19,34 @@ public class HoopController : MonoBehaviour
         audioSource = GetComponent<AudioSource>();
     }
     
-    private void OnTriggerEnter(Collider other)
-    {
-        Debug.Log("Triggered by: " + other.name);
-        if (other.CompareTag("Ball"))
-        {
-            ScorePoint();
-        }
-        
-        
-    }
     
-    public void ScorePoint()
-    {
+    public void ScorePointPlayer()
+    { 
         // Increment score
         pointsScored++;
         
         // Play sound effect
         if (scoreSound != null && audioSource != null)
         {
-            audioSource.PlayOneShot(scoreSound, 0.3f);
+            audioSource.PlayOneShot(scoreSound, 0.2f);
         }
         
         // Debug log for testing
         Debug.Log("Score! Total points: " + pointsScored);
     }
-}
+
+    public void ScorePointEnemy()
+
+        {
+            enemyPoints++;
+            Debug.Log("Enemy Scored! Total points: " + enemyPoints);
+
+            // Play sound effect
+            if (scoreSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(enemyScoreSound, 0.2f);
+            }
+        }
+
+
+    }

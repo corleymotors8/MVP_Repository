@@ -133,6 +133,9 @@ MonoBehaviour:
   detectionRadius: 3
   heightOffset: 2
   destroySound: {fileID: 8300000, guid: 35f0decdfa1884d1a82cd827d4d67a80, type: 3}
+  pickUpSound: {fileID: 8300000, guid: 18dabb3af2bdd495597927dd9c9ce3b0, type: 3}
+  hitBarrier: {fileID: 8300000, guid: d847255e3a36f48c39e42e1c4f002260, type: 3}
+  hitGround: {fileID: 8300000, guid: 32f0112a0c9c444668ed6f4f5ca7ef41, type: 3}
 --- !u!58 &3246704845881502570
 CircleCollider2D:
   m_ObjectHideFlags: 0

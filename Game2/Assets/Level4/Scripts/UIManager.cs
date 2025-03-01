@@ -1,25 +1,32 @@
 using UnityEngine;
 using System.Collections.Generic;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
     // References to the UI elements
     [SerializeField] private List<GameObject> healthIcons = new List<GameObject>();
     [SerializeField] private List<GameObject> shieldIcons = new List<GameObject>();
+    [SerializeField] private TextMeshProUGUI playerScoreText; // Add this line
+
     
     // References to player and game manager
     private Player player;
     private GameManager gameManager;
+    HoopController hoopController;
     
     // Track previous values to avoid unnecessary updates
     private int lastHealthValue = -1;
     private int lastShieldValue = -1;
+     private int lastScoreValue = -1; // Add this line
     
     void Start()
     {
         // Find the player and game manager references
         player = FindFirstObjectByType<Player>();
         gameManager = FindFirstObjectByType<GameManager>();
+        hoopController = FindFirstObjectByType<HoopController>();
+
         
         if (player == null)
         {
@@ -51,6 +58,12 @@ public class UIManager : MonoBehaviour
                 UpdateShieldDisplay();
             }
         }
+
+         // Check if score has changed
+        if (hoopController != null && hoopController.pointsScored != lastScoreValue)
+        {
+            UpdateScoreDisplay();
+        }
     }
     
     void UpdateHealthDisplay()
@@ -81,6 +94,15 @@ public class UIManager : MonoBehaviour
                 // Show shield if player has this shield point, hide otherwise
                 shieldIcons[i].SetActive(i < shieldValue);
             }
+        }
+    }
+
+     void UpdateScoreDisplay()
+    {
+        if (hoopController != null && playerScoreText != null)
+        {
+            lastScoreValue = hoopController.pointsScored;
+            playerScoreText.text = "Player score: " + lastScoreValue;
         }
     }
 }

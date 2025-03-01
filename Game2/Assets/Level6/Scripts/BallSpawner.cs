@@ -6,7 +6,9 @@ public class BallSpawner : MonoBehaviour
     [Header("Spawning Settings")]
     public GameObject ballPrefab;
     public Transform spawnPoint;
+    AudioSource audioSource;
     public float spawnDelay = 2f;
+    public AudioClip spawnSound;
     public int maxBalls = 1;
 
     [Header("Stats")]
@@ -16,7 +18,12 @@ public class BallSpawner : MonoBehaviour
     private Coroutine spawnCoroutine;
 
     // Called by the ball when it's destroyed
-    
+
+    public void Start()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
+
     public void BallDestroyed()
     {
         currentBallCount--;
@@ -52,6 +59,7 @@ public class BallSpawner : MonoBehaviour
 
         // Spawn the ball at the spawn point position and rotation
         GameObject newBall = Instantiate(ballPrefab, spawnPoint.position, spawnPoint.rotation);
+        audioSource.PlayOneShot(spawnSound, 0.08f);
         
         // Increment the counter
         currentBallCount++;

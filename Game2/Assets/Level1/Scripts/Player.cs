@@ -170,6 +170,7 @@ public class Player : MonoBehaviour, IDamageable
     if (gameManager.playerCanMove && Input.GetKeyDown(KeyCode.H) && heldBall != null)
 {
     ThrowBall();
+    audioSource.PlayOneShot(throwSound, 0.3f);
 }
        
     // Walking on ground
